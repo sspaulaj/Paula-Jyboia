@@ -313,6 +313,18 @@ export function mountEditor(
   };
   let invalidStructure = false;
   let pendingDisconnect: { group: string; message: string } | null = null;
+  // Pending move announcement: accumulates across events of the same gesture
+  // and flushes once via requestAnimationFrame, so only one message fires per
+  // connect/disconnect action regardless of how many BlockMove events Blockly
+  // emits for the same group.
+  let pendingMoveAnnouncement: string | null = null;
+  let moveFrame = 0;
+  const flushMoveAnnouncement = () => {
+    if (pendingMoveAnnouncement !== null) {
+      announce(pendingMoveAnnouncement);
+      pendingMoveAnnouncement = null;
+    }
+  };
   const synchronize = () => {
     if (disposed || loading) return;
     const program = readProgram(workspace, false);
@@ -372,9 +384,13 @@ export function mountEditor(
         ? workspace.getBlockById(event.blockId)
         : null;
       if (block && !block.isInsertionMarker()) {
-        announce(
-          `${event.newParentId ? 'Conexão confirmada.' : 'Bloco desconectado.'} ${describeBlock(readBlock(block))}`,
-        );
+        // Only keep the first block of the group; subsequent BlockMove events
+        // from the same gesture (child blocks being dragged along) are ignored.
+        if (pendingMoveAnnouncement === null) {
+          pendingMoveAnnouncement = `${event.newParentId ? 'Conexão confirmada.' : 'Bloco desconectado.'} ${describeBlock(readBlock(block))}`;
+          cancelAnimationFrame(moveFrame);
+          moveFrame = requestAnimationFrame(flushMoveAnnouncement);
+        }
       }
     }
     if (event.type === Blockly.Events.BLOCK_DELETE)
@@ -661,6 +677,8 @@ export function mountEditor(
       clearPointer();
       disposed = true;
       cancelAnimationFrame(frame);
+      cancelAnimationFrame(moveFrame);
+      pendingMoveAnnouncement = null;
       observer.disconnect();
       cancelAnimationFrame(focusFrame);
       container.removeEventListener('pointerover', onPointerOver);
