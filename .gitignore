@@ -5,7 +5,6 @@ test-results/
 playwright-report/
 .env
 .env.*
-!.env.example
 *.tsbuildinfo
 *.log
 .tools/
@@ -22,3 +21,13 @@ id_rsa*
 id_ed25519*
 cdk.out/
 cdk.context.json
+
+.vercel
+.env*
+
+# Arquivos locais — não vão ao repositório
+.env.example
+.agents/
+AGENTS.md
+infra/
+apps/web/vercel.json
