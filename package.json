@@ -1,0 +1,51 @@
+{
+  "name": "jyboia",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": ">=24.22.2 <25",
+    "pnpm": "12.16.1"
+  },
+  "scripts": {
+    "test:e2e:persistence": "pnpm build && playwright test --config playwright.persistence.config.ts",
+    "test:integration": "pnpm build:packages && pnpm --filter @jyboia/api db:generate && vitest run --config vitest.integration.config.ts",
+    "openapi:generate": "pnpm build:packages && node scripts/generate-openapi.mjs",
+    "db:deploy": "pnpm --filter @jyboia/api exec prisma migrate deploy",
+    "test:e2e": "playwright test",
+    "dev": "pnpm dev:web",
+    "dev:all": "pnpm build:packages && pnpm --parallel -r dev",
+    "dev:web": "pnpm build:packages && pnpm --filter @jyboia/web dev",
+    "dev:api": "pnpm build:packages && pnpm --filter @jyboia/api dev",
+    "build:packages": "pnpm --filter \"./packages/*\" -r build",
+    "build": "pnpm build:web",
+    "build:web": "pnpm build:packages && pnpm --filter @jyboia/web build",
+    "build:all": "pnpm -r build",
+    "preview": "pnpm --filter @jyboia/web preview",
+    "test:e2e:static": "pnpm build:web && playwright test --config playwright.static.config.ts",
+    "typecheck": "pnpm build:packages && pnpm -r typecheck",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "pnpm build:packages && vitest run",
+    "test:watch": "pnpm build:packages && vitest",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:validate": "pnpm --filter @jyboia/api db:validate",
+    "db:generate": "pnpm --filter @jyboia/api db:generate",
+    "db:migrate": "pnpm --filter @jyboia/api db:migrate",
+    "db:check": "pnpm --filter @jyboia/api db:check"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.1",
+    "@types/node": "24.19.2",
+    "eslint": "10.14.0",
+    "eslint-config-prettier": "10.1.8",
+    "globals": "17.14.0",
+    "prettier": "3.9.10",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.1",
+    "vitest": "5.1.0"
+  }
+}

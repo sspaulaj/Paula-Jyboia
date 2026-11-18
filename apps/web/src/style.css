@@ -1,0 +1,21 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #172b22;
+  background: #f6f8f5;
+  line-height: 1.6;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+#root {
+  height: 100%;
+}
+/* Preserva estilo do App.tsx (rota de fallback) */
+main:not(.block-editor):not(.editor-page__center) {
+  max-width: 48rem;
+  margin: 4rem auto;
+  padding: 1.5rem;
+}

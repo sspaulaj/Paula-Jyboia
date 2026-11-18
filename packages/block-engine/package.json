@@ -1,0 +1,39 @@
+{
+  "name": "@jyboia/block-engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./editor-document": { "types": "./dist/editor-document.d.ts", "import": "./dist/editor-document.js" },
+    "./validation": {
+      "types": "./dist/document.d.ts",
+      "import": "./dist/document.js"
+    },
+    "./experimental": {
+      "types": "./dist/experimental.d.ts",
+      "import": "./dist/experimental.js"
+    },
+    ".": {
+      "types": "./dist/model.d.ts",
+      "import": "./dist/model.js"
+    },
+    "./model": {
+      "types": "./dist/model.d.ts",
+      "import": "./dist/model.js"
+    },
+    "./runtime": {
+      "types": "./dist/runtime.d.ts",
+      "import": "./dist/runtime.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "ajv": "8.20.0"
+  }
+}

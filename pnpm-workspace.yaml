@@ -1,0 +1,15 @@
+packages:
+  - apps/*
+  - packages/*
+  - infra/*
+
+engineStrict: true
+saveExact: true
+strictPeerDependencies: true
+storeDir: .pnpm-store
+
+allowBuilds:
+  '@prisma/engines': true
+  prisma: true
+  '@prisma/client': false
+  esbuild: true

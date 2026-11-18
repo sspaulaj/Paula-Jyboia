@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="720" viewBox="0 0 720 720" role="img" aria-labelledby="title desc">
+  <title id="title">Jiboia, mascote do Projeto Jyboia</title>
+  <desc id="desc">Ilustração vetorial bidimensional de uma jiboia verde simpática, enrolada em espiral, com olhos expressivos e pequenos detalhes de circuitos.</desc>
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8FE0AD"/>
+      <stop offset="1" stop-color="#42AF81"/>
+    </linearGradient>
+  </defs>
+  <!-- Cauda em espiral, com contorno forte para leitura visual em tamanhos pequenos. -->
+  <path d="M 260 450 C 198 432 173 479 194 532 C 220 595 327 620 446 583 C 560 547 568 460 524 409 C 478 356 403 370 379 423 C 362 464 391 501 429 498 C 454 496 464 476 455 460" fill="none" stroke="#174C3C" stroke-width="119" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 260 450 C 198 432 173 479 194 532 C 220 595 327 620 446 583 C 560 547 568 460 524 409 C 478 356 403 370 379 423 C 362 464 391 501 429 498 C 454 496 464 476 455 460" fill="none" stroke="url(#body)" stroke-width="102" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Manchas características, discretas e estilizadas. -->
+  <g fill="#298461" opacity=".9">
+    <ellipse cx="219" cy="519" rx="24" ry="17" transform="rotate(30 219 519)"/>
+    <ellipse cx="307" cy="564" rx="28" ry="17" transform="rotate(-6 307 564)"/>
+    <ellipse cx="430" cy="553" rx="24" ry="17" transform="rotate(-16 430 553)"/>
+    <ellipse cx="521" cy="489" rx="20" ry="16" transform="rotate(-55 521 489)"/>
+    <ellipse cx="462" cy="407" rx="21" ry="14" transform="rotate(25 462 407)"/>
+  </g>
+  <!-- Pescoço. -->
+  <path d="M 284 450 C 259 390 269 331 303 274" fill="none" stroke="#174C3C" stroke-width="115" stroke-linecap="round"/>
+  <path d="M 284 450 C 259 390 269 331 303 274" fill="none" stroke="#65C994" stroke-width="100" stroke-linecap="round"/>
+  <path d="M 298 341 C 297 367 298 392 304 414" fill="none" stroke="#B9F0C9" stroke-width="29" stroke-linecap="round"/>
+  <!-- Cabeça grande, ligeiramente inclinada. -->
+  <path d="M 239 245 C 216 207 235 153 289 134 C 338 116 393 130 419 170 C 435 195 430 220 457 233 C 490 247 494 292 468 319 C 440 348 368 356 296 332 C 245 315 225 283 239 245 Z" fill="#174C3C"/>
+  <path d="M 249 241 C 228 207 248 164 294 148 C 338 134 383 145 407 181 C 424 206 423 232 448 245 C 475 259 478 288 455 307 C 428 331 366 336 303 316 C 259 302 240 275 249 241 Z" fill="#81D9A3"/>
+  <!-- Focinho e bochechas. -->
+  <path d="M 316 273 C 349 253 406 262 450 249 C 478 262 474 290 453 307 C 424 330 363 325 318 304 Z" fill="#BFF0CB"/>
+  <ellipse cx="295" cy="264" rx="18" ry="11" fill="#F6A9A6" opacity=".65"/>
+  <ellipse cx="426" cy="290" rx="17" ry="10" fill="#F6A9A6" opacity=".55"/>
+  <!-- Olhos, brilho e sobrancelhas. -->
+  <ellipse cx="298" cy="228" rx="22" ry="29" fill="#173F35"/>
+  <ellipse cx="378" cy="226" rx="22" ry="29" fill="#173F35"/>
+  <circle cx="290" cy="216" r="8" fill="#FFFFFF"/>
+  <circle cx="370" cy="214" r="8" fill="#FFFFFF"/>
+  <path d="M 276 188 Q 298 176 315 190 M 358 188 Q 378 178 396 192" fill="none" stroke="#174C3C" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="438" cy="274" r="5" fill="#245747"/>
+  <path d="M 358 297 Q 382 315 407 299" fill="none" stroke="#245747" stroke-width="6" stroke-linecap="round"/>
+  <!-- Detalhe de tecnologia inspirado em trilhas de circuito. -->
+  <g fill="none" stroke="#D8FFF0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 262 404 L 243 417 L 243 436"/>
+    <path d="M 324 554 L 342 536 L 366 536"/>
+    <path d="M 494 543 L 512 526"/>
+  </g>
+  <g fill="#D8FFF0">
+    <circle cx="243" cy="439" r="7"/>
+    <circle cx="370" cy="536" r="7"/>
+    <circle cx="516" cy="522" r="7"/>
+  </g>
+</svg>

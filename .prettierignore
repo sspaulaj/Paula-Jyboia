@@ -1,0 +1,13 @@
+node_modules
+dist
+coverage
+test-results
+playwright-report
+.tools
+.pnpm-store
+pnpm-lock.yaml
+apps/api/src/generated
+# Documentação anterior não faz parte da formatação do scaffold.
+.agents
+AGENTS.md
+docs

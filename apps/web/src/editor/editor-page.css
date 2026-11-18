@@ -1,0 +1,628 @@
+/* ========================================================
+   Layout principal do editor Jyboia
+   Prioridade: desktop/notebook. Adaptações para telas menores ao final.
+   ======================================================== */
+
+/* --- Variáveis de cor e dimensão --- */
+:root {
+  --color-bg: #f0f4f2;
+  --color-surface: #ffffff;
+  --color-border: #c8d5cc;
+  --color-text: #172b22;
+  --color-text-muted: #4a6358;
+  --color-primary: #24563e;
+  --color-primary-hover: #1b3f2d;
+  --color-primary-fg: #ffffff;
+  --color-stop: #c0392b;
+  --color-stop-hover: #962d22;
+  --color-focus: #995c00;
+  --top-bar-height: 3.5rem;
+  --left-col-width: 11rem;
+  --right-col-width: 18rem;
+}
+
+/* --- Reset de base --- */
+.editor-page *,
+.editor-page *::before,
+.editor-page *::after {
+  box-sizing: border-box;
+}
+
+/* --- Página --- */
+.editor-page {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: system-ui, sans-serif;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+/* ========================================================
+   Barra superior
+   ======================================================== */
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  height: var(--top-bar-height);
+  padding: 0 1rem;
+  background: var(--color-primary);
+  color: var(--color-primary-fg);
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0 0 0 / 0.18);
+  z-index: 10;
+}
+
+.top-bar__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.top-bar__logo {
+  border-radius: 50%;
+  background: rgba(255 255 255 / 0.15);
+  padding: 2px;
+}
+
+.top-bar__name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.top-bar__project {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.top-bar__project-label {
+  font-size: 0.8rem;
+  opacity: 0.75;
+  flex-shrink: 0;
+}
+
+.top-bar__project-name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.top-bar__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.top-bar__action-btn {
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.4rem 0.85rem;
+  border-radius: 0.35rem;
+  border: 2px solid rgba(255 255 255 / 0.5);
+  background: transparent;
+  color: var(--color-primary-fg);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.top-bar__action-btn:hover {
+  background: rgba(255 255 255 / 0.15);
+}
+
+.top-bar__action-btn--primary {
+  background: rgba(255 255 255 / 0.2);
+  border-color: rgba(255 255 255 / 0.8);
+}
+
+.top-bar__action-btn--primary:hover {
+  background: rgba(255 255 255 / 0.3);
+}
+
+.top-bar__action-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.top-bar__action-btn:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* ========================================================
+   Corpo do editor (colunas: categorias | editor | direita)
+   ======================================================== */
+.editor-page__body {
+  display: grid;
+  grid-template-columns: var(--left-col-width) minmax(0, 1fr) var(
+      --right-col-width
+    );
+  grid-template-rows: 1fr;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ========================================================
+   Coluna esquerda — categorias
+   ======================================================== */
+.editor-page__left {
+  overflow: hidden;
+  border-right: 1px solid var(--color-border);
+}
+
+/* --- Painel de categorias --- */
+.category-panel {
+  width: 100%;
+  height: 100%;
+  background: #e4ede7;
+  overflow-y: auto;
+  padding: 0.5rem 0;
+}
+
+.category-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.category-panel__item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: transparent;
+  border: none;
+  border-left: 4px solid transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  text-align: left;
+  position: relative;
+  transition: background 0.12s;
+}
+
+.category-panel__item:hover {
+  background: rgba(0 0 0 / 0.06);
+}
+
+.category-panel__item[aria-pressed='true'] {
+  background: var(--color-surface);
+  border-left-color: var(--cat-color, var(--color-primary));
+}
+
+.category-panel__icon {
+  font-size: 1rem;
+  width: 1.2rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.category-panel__label {
+  flex: 1;
+}
+
+.category-panel__indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cat-color, var(--color-primary));
+  flex-shrink: 0;
+}
+
+.category-panel__item:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+/* ========================================================
+   Centro — editor de blocos
+   O editor ocupa toda a área entre a paleta e a coluna direita,
+   sem toolbar própria (os controles ficam na barra superior).
+   ======================================================== */
+.editor-page__center {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f6f8f5;
+}
+
+.block-editor {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* O editor-host preenche toda a altura disponível */
+.block-editor .editor-host {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  flex: 1;
+  height: auto;
+  min-height: 0;
+  border-radius: 0;
+  border: none;
+}
+
+/* ========================================================
+   Direita — palco, personagens, controles
+   ======================================================== */
+.editor-page__right {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--color-border);
+  overflow-y: auto;
+  background: var(--color-surface);
+  gap: 0;
+}
+
+/* --- Controles de execução --- */
+.execution-controls {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: #e8f0eb;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.execution-controls__btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+  justify-content: center;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  padding: 0.55rem 0.5rem;
+  border-radius: 0.4rem;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    opacity 0.15s;
+}
+
+.execution-controls__btn--start {
+  background: #27ae60;
+  color: #fff;
+  border-color: #1e8449;
+}
+
+.execution-controls__btn--start:hover:not(:disabled) {
+  background: #1e8449;
+}
+
+.execution-controls__btn--stop {
+  background: var(--color-stop);
+  color: #fff;
+  border-color: var(--color-stop-hover);
+}
+
+.execution-controls__btn--stop:hover:not(:disabled) {
+  background: var(--color-stop-hover);
+}
+
+.execution-controls__btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.execution-controls__btn:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.execution-controls__icon {
+  font-size: 0.8rem;
+}
+
+/* --- Palco --- */
+.stage {
+  flex-shrink: 0;
+}
+
+.stage__canvas {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #1a1a2e;
+  overflow: hidden;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.stage__grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255 255 255 / 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255 255 255 / 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.stage__character {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition:
+    left 0.2s ease,
+    top 0.2s ease,
+    transform 0.2s ease;
+}
+
+.block-actions {
+  padding: 0.5rem;
+  background: #fff;
+  color: #14251c;
+  max-height: 42vh;
+  overflow: auto;
+  flex-shrink: 0;
+}
+
+.program-summary {
+  padding: 0.75rem;
+  background: #fff;
+  color: #14251c;
+  overflow-wrap: anywhere;
+}
+
+.project-actions { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: #fff; color: #14251c; }
+.project-actions input, .project-actions button { padding: 0.5rem; }
+.project-list { position: absolute; top: 100%; left: 0; z-index: 20; max-height: 65vh; overflow: auto; padding: 1rem; max-width: 100%; background: white; border: 2px solid #14251c; box-shadow: 0 4px 12px #0003; }
+.project-list ul { list-style: none; padding: 0; }
+.project-error { margin: 0; color: #8b1414; flex-basis: 100%; }
+.program-summary h2 {
+  font-size: 1rem;
+}
+.execution-controls__btn[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: default;
+}
+.block-actions__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+}
+.block-actions label {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
+}
+.block-actions select {
+  max-width: min(100%, 24rem);
+  padding: 0.4rem;
+}
+.block-actions button {
+  padding: 0.5rem;
+}
+
+.stage__character-img {
+  width: 64px;
+  height: 64px;
+  filter: drop-shadow(0 2px 6px rgba(0 0 0 / 0.5));
+  display: block;
+}
+
+.stage__running-indicator {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: #27ae60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  color: white;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* --- Painel de personagens --- */
+.character-panel {
+  padding: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.character-panel__title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin: 0 0 0.5rem;
+}
+
+.character-panel__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.character-panel__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.4rem;
+  border-radius: 0.4rem;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text);
+  transition:
+    border-color 0.12s,
+    background 0.12s;
+  min-width: 4rem;
+}
+
+.character-panel__item:hover {
+  border-color: var(--color-primary);
+  background: #e8f0eb;
+}
+
+.character-panel__item[data-selected='true'] {
+  border-color: var(--color-primary);
+  background: #d2e8da;
+}
+
+.character-panel__item:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.character-panel__image {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+/* ========================================================
+   Utilitário: ocultar visualmente mas manter para leitores de tela
+   ======================================================== */
+.screen-reader-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ========================================================
+   Foco global dentro do editor
+   ======================================================== */
+.editor-page a:focus-visible,
+.editor-page button:focus-visible,
+.editor-page [tabindex]:not(.blocklyPath):focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* ========================================================
+   Responsividade
+   ======================================================== */
+
+/* Tablet: comprime colunas */
+@media (max-width: 1100px) {
+  :root {
+    --right-col-width: 15rem;
+    --left-col-width: 9rem;
+  }
+}
+
+/* Mobile: empilha as regiões */
+@media (max-width: 720px) {
+  .editor-page__body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    overflow-y: auto;
+  }
+
+  .editor-page__left {
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    height: auto;
+  }
+
+  .category-panel {
+    width: auto;
+    height: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0;
+  }
+
+  .category-panel__list {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .category-panel__item {
+    flex-direction: column;
+    padding: 0.4rem 0.6rem;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+    font-size: 0.75rem;
+  }
+
+  .category-panel__item[aria-pressed='true'] {
+    border-left: none;
+    border-bottom-color: var(--cat-color, var(--color-primary));
+  }
+
+  .editor-page__center {
+    min-height: 55vw;
+  }
+
+  .editor-page__right {
+    border-left: none;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .stage__canvas {
+    max-height: 50vw;
+  }
+}
+
+.stage__speech {
+  position: absolute;
+  top: 0;
+  left: 0.5rem;
+  right: 0.5rem;
+  overflow-wrap: anywhere;
+  background: white;
+  color: black;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage__character {
+    transition: none;
+  }
+}
