@@ -86,7 +86,6 @@ export function EditorPage() {
   return (
     <div className="editor-page">
       <TopBar
-        project={{ id: null, name: 'Programa desta sessão' }}
         isDisconnectEnabled={
           isDisconnectEnabled && executionState !== 'running'
         }

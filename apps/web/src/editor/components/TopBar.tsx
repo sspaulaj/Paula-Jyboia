@@ -1,8 +1,5 @@
 import jyboiaMascote from '../../assets/jyboia-mascote.svg';
-import type { ProjectInfo } from '../types';
-
 interface TopBarProps {
-  project: ProjectInfo;
   isDisconnectEnabled: boolean;
   onEnterEditor: () => void;
   onOpenPalette: () => void;
@@ -10,7 +7,6 @@ interface TopBarProps {
 }
 
 export function TopBar({
-  project,
   isDisconnectEnabled,
   onEnterEditor,
   onOpenPalette,
@@ -28,10 +24,6 @@ export function TopBar({
           height={36}
         />
         <span className="top-bar__name">Jyboia</span>
-      </div>
-
-      <div className="top-bar__project" aria-label="Projeto atual">
-        <span className="top-bar__project-name">{project.name}</span>
       </div>
 
       <nav className="top-bar__actions" aria-label="Controles do editor">
