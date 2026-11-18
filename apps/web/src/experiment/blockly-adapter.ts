@@ -284,6 +284,14 @@ export function mountEditor(
     zoom: { controls: false, wheel: false, startScale: 1 },
     grid: { spacing: 24, length: 2, colour: '#d6dfd9', snap: false },
   });
+  // Blockly injects its own aria-live region (#blocklyAriaAnnounce) and uses
+  // it to announce focus changes (e.g. "3 of 6 level 1"). All accessibility
+  // announcements in Jyboia go through the editor's own aria-live region in
+  // EditorPage, so silence Blockly's region to avoid duplicate and confusing
+  // screen reader output.
+  document
+    .getElementById('blocklyAriaAnnounce')
+    ?.setAttribute('aria-live', 'off');
   let disposed = false;
   let frame = 0;
   let selectedId: string | null = null;
