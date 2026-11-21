@@ -2,6 +2,21 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { createAnnouncements } from './announcements';
 afterEach(() => vi.useRealTimers());
 
+it('reentrada real permite repetir o mesmo texto sem aguardar a deduplicação', () => {
+  vi.useFakeTimers();
+  const publish = vi.fn();
+  const controller = createAnnouncements(publish);
+  controller.edit('Mover 10 passos', true);
+  vi.advanceTimersByTime(150);
+  controller.edit('Mover 10 passos', true);
+  vi.advanceTimersByTime(150);
+  expect(publish).toHaveBeenCalledTimes(2);
+  controller.setExecuting(true);
+  controller.edit('Mover 10 passos', true);
+  vi.runAllTimers();
+  expect(publish).toHaveBeenCalledTimes(2);
+});
+
 it('agrupa alterações rápidas e elimina repetição imediata', () => {
   vi.useFakeTimers();
   const publish = vi.fn();
@@ -43,4 +58,22 @@ it('desmontagem descarta mensagens pendentes', () => {
   controller.dispose();
   vi.runAllTimers();
   expect(publish).not.toHaveBeenCalled();
+});
+
+it('leitura por foco limpa avisos e bloqueia eventos tardios até nova interação', () => {
+  vi.useFakeTimers();
+  const publish = vi.fn();
+  const controller = createAnnouncements(publish);
+  controller.edit('Bloco inserido');
+  controller.beginSequence();
+  controller.resumeEditing();
+  controller.edit('Seleção durante execução');
+  controller.setExecuting(false);
+  controller.edit('Seleção tardia');
+  vi.runAllTimers();
+  expect(publish.mock.calls).toEqual([['']]);
+  controller.resumeEditing();
+  controller.edit('Nova interação');
+  vi.runAllTimers();
+  expect(publish).toHaveBeenLastCalledWith('Nova interação');
 });

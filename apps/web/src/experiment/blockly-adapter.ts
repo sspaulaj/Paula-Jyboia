@@ -268,7 +268,7 @@ export interface EditorSnapshot {
 export function mountEditor(
   container: HTMLDivElement,
   update: (snapshot: EditorSnapshot) => void,
-  announce: (message: string) => void,
+  announce: (message: string, newPointerEntry?: boolean) => void,
 ) {
   registerBlocks();
   const workspace = Blockly.inject(container, {
@@ -435,34 +435,46 @@ export function mountEditor(
     return null;
   };
   let pointerTimer: ReturnType<typeof setTimeout> | undefined;
+  let pointerBlock: Blockly.BlockSvg | null = null;
+  let pointerPosition: { x: number; y: number } | null = null;
   const clearPointer = () => {
     if (pointerTimer !== undefined) clearTimeout(pointerTimer);
     pointerTimer = undefined;
   };
-  const onPointerOver = (event: PointerEvent) => {
-    const block = blockUnderPointer(event.target);
+  const updatePointer = (event: PointerEvent, target: EventTarget | null) => {
+    // Layout/SVG updates can emit boundary events without physical movement.
     if (
-      !block ||
-      event.buttons ||
-      block === blockUnderPointer(event.relatedTarget)
+      pointerPosition?.x === event.clientX &&
+      pointerPosition.y === event.clientY
     )
       return;
+    pointerPosition = { x: event.clientX, y: event.clientY };
+    const block = event.buttons ? null : blockUnderPointer(target);
+    if (block === pointerBlock) return;
     clearPointer();
+    pointerBlock?.getSvgRoot()?.classList.remove('jyboia-pointer-block');
+    pointerBlock = block;
+    if (!block) return;
     block.getSvgRoot().classList.add('jyboia-pointer-block');
     pointerTimer = setTimeout(() => {
       pointerTimer = undefined;
-      if (!disposed && block.workspace.getBlockById(block.id))
-        announce(block.getAriaLabel(Blockly.utils.aria.Verbosity.STANDARD));
+      if (
+        !disposed &&
+        pointerBlock === block &&
+        block.workspace.getBlockById(block.id)
+      )
+        announce(
+          block.getAriaLabel(Blockly.utils.aria.Verbosity.STANDARD),
+          true,
+        );
     }, 180);
   };
-  const onPointerOut = (event: PointerEvent) => {
-    const block = blockUnderPointer(event.target);
-    if (block && block !== blockUnderPointer(event.relatedTarget)) {
-      clearPointer();
-      block.getSvgRoot().classList.remove('jyboia-pointer-block');
-    }
-  };
+  const onPointerOver = (event: PointerEvent) =>
+    updatePointer(event, event.target);
+  const onPointerOut = (event: PointerEvent) =>
+    updatePointer(event, event.relatedTarget);
   container.addEventListener('pointerover', onPointerOver);
+  container.addEventListener('pointermove', onPointerOver);
   container.addEventListener('pointerout', onPointerOut);
   // Reparenting SVG during a keyboard drop can clear native browser focus.
   // Restore only that keyboard target, never after a pointer action or Tab.
@@ -489,6 +501,15 @@ export function mountEditor(
   synchronize();
   return {
     workspace,
+    prepareExecution() {
+      clearPointer();
+      Blockly.Tooltip.hide();
+      cancelAnimationFrame(moveFrame);
+      pendingMoveAnnouncement = null;
+      pendingDisconnect = null;
+      ++insertionVersion;
+      cancelAnimationFrame(focusFrame);
+    },
     exportDocument,
     readInitialState: () => ({ ...initialState }),
     loadDocument(input: unknown) {
@@ -683,6 +704,7 @@ export function mountEditor(
     },
     dispose() {
       clearPointer();
+      Blockly.Tooltip.hide();
       disposed = true;
       cancelAnimationFrame(frame);
       cancelAnimationFrame(moveFrame);
@@ -690,6 +712,7 @@ export function mountEditor(
       observer.disconnect();
       cancelAnimationFrame(focusFrame);
       container.removeEventListener('pointerover', onPointerOver);
+      container.removeEventListener('pointermove', onPointerOver);
       container.removeEventListener('pointerout', onPointerOut);
       container.removeEventListener('keydown', preserveDropFocus, true);
       workspace.removeChangeListener(onChange);

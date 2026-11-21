@@ -4,7 +4,7 @@ import {
   type EditorSnapshot,
 } from '../../experiment/blockly-adapter';
 import '../../experiment/editor.css';
-import { BLOCKS_BY_CATEGORY, CATEGORIES } from '../categories';
+import { BLOCKS_BY_CATEGORY } from '../categories';
 import type { BlockCategory } from '../types';
 
 interface BlockEditorProps {
@@ -55,12 +55,6 @@ export function BlockEditor({
 
   useEffect(() => {
     internalRef.current?.setPalette(BLOCKS_BY_CATEGORY[category]);
-    const label = CATEGORIES.find((item) => item.id === category)?.label;
-    announce(
-      BLOCKS_BY_CATEGORY[category].length
-        ? `Blocos de ${label} disponíveis na paleta ao lado das categorias.`
-        : `${label}: sem blocos disponíveis.`,
-    );
   }, [category]);
 
   return (

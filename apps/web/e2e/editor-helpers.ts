@@ -7,7 +7,10 @@ export async function insertFromPalette(
 ) {
   await page
     .locator('.category-panel')
-    .getByRole('button', { name: category, exact: true })
+    .getByRole('button', {
+      name: `Escolher blocos de ${category.toLocaleLowerCase('pt-BR')}`,
+      exact: true,
+    })
     .press('Enter');
   await page
     .getByRole('button', { name: 'Escolher tipos de blocos' })

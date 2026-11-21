@@ -201,7 +201,7 @@
   background: rgba(0 0 0 / 0.06);
 }
 
-.category-panel__item[aria-pressed='true'] {
+.category-panel__item[aria-current='true'] {
   background: var(--color-surface);
   border-left-color: var(--cat-color, var(--color-primary));
 }
@@ -281,6 +281,7 @@
 /* --- Controles de execução --- */
 .execution-controls {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   padding: 0.6rem 0.75rem;
   background: #e8f0eb;
@@ -534,6 +535,13 @@
   border: 0;
 }
 
+/* Keep the sequence visually hidden even when focused. Indicate keyboard
+   focus on its controls instead, without displaying the sequence text. */
+.execution-controls:has(.execution-sequence:focus-visible) {
+  outline: 3px solid var(--color-focus);
+  outline-offset: -3px;
+}
+
 /* ========================================================
    Foco global dentro do editor
    ======================================================== */
@@ -594,7 +602,7 @@
     font-size: 0.75rem;
   }
 
-  .category-panel__item[aria-pressed='true'] {
+  .category-panel__item[aria-current='true'] {
     border-left: none;
     border-bottom-color: var(--cat-color, var(--color-primary));
   }

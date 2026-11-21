@@ -19,17 +19,22 @@ test('girar e mover dez passos avança em X sem alterar Y', async ({ page }) => 
     .getByRole('button', { name: 'Iniciar programa', exact: true })
     .press('Enter');
   await expect(
-    page.getByRole('img', { name: /posição x 10, y 0; direção 270 graus/ }),
+    page.locator(
+      '.stage__character[data-x="10"][data-y="0"][data-heading="270"]',
+    ),
   ).toBeVisible();
-  await expect(
-    page.getByRole('status', { name: 'Alterações do programa' }),
-  ).toContainText('mover 10 passos');
+  await expect(page.locator('#execution-sequence')).toContainText(
+    'Mover 10 passos',
+  );
 });
 
 async function insertBlock(page: Page, category: string) {
   await page
     .locator('.category-panel')
-    .getByRole('button', { name: category, exact: true })
+    .getByRole('button', {
+      name: `Escolher blocos de ${category.toLocaleLowerCase('pt-BR')}`,
+      exact: true,
+    })
     .click();
   await page
     .getByRole('button', { name: 'Escolher tipos de blocos' })
@@ -54,13 +59,13 @@ test('cada início mantém a posição atual e move mais dez passos', async ({
   });
   await start.click();
   await expect(
-    page.getByRole('img', { name: /Personagem Jyboia: posição x 10, y 0/ }),
+    page.locator('.stage__character[data-x="10"][data-y="0"]'),
   ).toBeVisible();
   await expect(start).toHaveAttribute('aria-disabled', 'false');
   expect((await character.boundingBox())!.x).toBeGreaterThan(before.x);
   await start.click();
   await expect(
-    page.getByRole('img', { name: /posição x 20, y 0/ }),
+    page.locator('.stage__character[data-x="20"][data-y="0"]'),
   ).toBeVisible();
   await expect(start).toHaveAttribute('aria-disabled', 'false');
   // Parar antes do próximo movimento também preserva a posição já alcançada.
@@ -72,12 +77,12 @@ test('cada início mantém a posição atual e move mais dez passos', async ({
     .click();
   await page.clock.runFor(1000);
   await expect(
-    page.getByRole('img', { name: /posição x 20, y 0/ }),
+    page.locator('.stage__character[data-x="20"][data-y="0"]'),
   ).toBeVisible();
   await start.click();
   await page.clock.runFor(1000);
   await expect(
-    page.getByRole('img', { name: /posição x 30, y 0/ }),
+    page.locator('.stage__character[data-x="30"][data-y="0"]'),
   ).toBeVisible();
 });
 
@@ -91,7 +96,7 @@ test('parar cancela comandos pendentes e programa vazio informa o erro', async (
   });
   await start.click();
   await expect(
-    page.getByRole('status', { name: 'Alterações do programa' }),
+    page.getByTestId('editor-announcements'),
   ).toContainText('Não foi possível iniciar.');
   await insertBlock(page, 'Eventos');
   await insertBlock(page, 'Movimento');
@@ -103,7 +108,7 @@ test('parar cancela comandos pendentes e programa vazio informa o erro', async (
     .click();
   await page.clock.runFor(1000);
   await expect(
-    page.getByRole('img', { name: /posição x 0, y 0/ }),
+    page.locator('.stage__character[data-x="0"][data-y="0"]'),
   ).toBeVisible();
   await expect(start).toBeEnabled();
 });

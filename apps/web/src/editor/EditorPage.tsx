@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { flushSync } from 'react-dom';
 import { TopBar } from './components/TopBar';
 import { CategoryPanel } from './components/CategoryPanel';
 import { BlockEditor } from './components/BlockEditor';
@@ -39,6 +40,14 @@ export function EditorPage() {
     selectedId: null,
   });
   const editorRef = useRef<ReturnType<typeof mountEditor> | null>(null);
+  const sequenceRef = useRef<HTMLDivElement>(null);
+  const [sequenceDescription, setSequenceDescription] = useState('');
+  const presentSequence = (text: string) => {
+    // Commit the reading target before the start button becomes unavailable.
+    // Focus conveys the sequence; do not also send it to a live region.
+    flushSync(() => setSequenceDescription(text));
+    sequenceRef.current?.focus({ preventScroll: true });
+  };
   const [executionAnnouncement, setExecutionAnnouncement] = useState({
     text: '',
     count: 0,
@@ -54,19 +63,16 @@ export function EditorPage() {
   useEffect(() => () => announcements.dispose(), [announcements]);
   const {
     actor,
+    movementDescription,
     error,
     executionState,
     start: handleStartExecution,
     stop: handleStopExecution,
-  } = useProgramExecution(editorRef, announcements);
+  } = useProgramExecution(editorRef, announcements, presentSequence);
   const stageDescription =
-    'Personagem Jyboia: posição x ' +
-    actor.x +
-    ', y ' +
-    actor.y +
-    '; direção ' +
-    actor.heading +
-    ' graus. ' +
+    'Personagem Jyboia. ' +
+    movementDescription +
+    ' ' +
     (actor.visible ? 'Visível.' : 'Escondido.') +
     (actor.message ? ' Diz: ' + actor.message + '.' : '');
 
@@ -84,7 +90,12 @@ export function EditorPage() {
   };
 
   return (
-    <div className="editor-page">
+    <div
+      className="editor-page"
+      onPointerMoveCapture={announcements.resumeEditing}
+      onPointerDownCapture={announcements.resumeEditing}
+      onKeyDownCapture={announcements.resumeEditing}
+    >
       <TopBar
         isDisconnectEnabled={
           isDisconnectEnabled && executionState !== 'running'
@@ -128,6 +139,8 @@ export function EditorPage() {
         <aside className="editor-page__right" aria-label="Palco e personagens">
           <ExecutionControls
             state={executionState}
+            sequenceRef={sequenceRef}
+            sequenceDescription={sequenceDescription}
             onStart={handleStartExecution}
             onStop={handleStopExecution}
           />
@@ -162,7 +175,7 @@ export function EditorPage() {
       {/* Anúncio de execução para leitores de tela (inclui sequência ao iniciar) */}
       <p
         role="status"
-        aria-label="Alterações do programa"
+        data-testid="editor-announcements"
         aria-live="polite"
         aria-atomic="true"
         className="screen-reader-only"

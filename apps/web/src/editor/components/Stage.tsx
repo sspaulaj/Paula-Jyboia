@@ -25,6 +25,9 @@ export function Stage({ actor, executionState, stageDescription }: StageProps) {
           className="stage__character"
           aria-hidden="true"
           data-state={executionState}
+          data-x={actor.x}
+          data-y={actor.y}
+          data-heading={actor.heading}
           style={{
             visibility: actor.visible ? 'visible' : 'hidden',
             left: `${((actor.x + 240) / 480) * 100}%`,

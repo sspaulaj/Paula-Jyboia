@@ -50,7 +50,7 @@ test('cria, salva, recupera, executa, atualiza e exclui um projeto estruturado v
   const saved = await response.json();
   expect(saved.formatVersion).toBe(2);
   expect(saved.workspaceData.program.blocks).toHaveLength(7);
-  const status = page.getByRole('status', { name: 'Alterações do programa' });
+  const status = page.getByTestId('editor-announcements');
   await expect(status).toHaveText('Projeto salvo com sucesso.');
   await expect(
     page.getByRole('button', { name: 'Salvar projeto', exact: true }),
@@ -145,7 +145,7 @@ test('falha de rede preserva alterações e cancelar novo preserva o editor', as
     .getByRole('button', { name: 'Salvar projeto', exact: true })
     .click();
   await expect(
-    page.getByRole('status', { name: 'Alterações do programa' }),
+    page.getByTestId('editor-announcements'),
   ).toContainText('Não foi possível salvar');
   await expect(
     page.getByText('Alterações não salvas.', { exact: true }),
@@ -175,7 +175,7 @@ test('carrega v1 preservando parâmetros e estado inicial, salva v2 explicitamen
     .click();
   await page.getByRole('button', { name: 'Abrir Legado', exact: true }).click();
   await expect(
-    page.getByRole('status', { name: 'Alterações do programa' }),
+    page.getByTestId('editor-announcements'),
   ).toContainText('Formato antigo convertido');
   await page
     .getByRole('button', { name: 'Iniciar programa', exact: true })
@@ -190,7 +190,7 @@ test('carrega v1 preservando parâmetros e estado inicial, salva v2 explicitamen
     .getByRole('button', { name: 'Salvar projeto', exact: true })
     .click();
   await expect(
-    page.getByRole('status', { name: 'Alterações do programa' }),
+    page.getByTestId('editor-announcements'),
   ).toHaveText('Projeto salvo com sucesso.');
   const updated = (
     await app.inject(`/api/projects/${created.json().id}`)
@@ -216,7 +216,7 @@ test('conflito e carregamento inválido preservam o projeto local', async ({
     .getByRole('button', { name: 'Abrir Concorrente', exact: true })
     .click();
   await expect(
-    page.getByRole('status', { name: 'Alterações do programa' }),
+    page.getByTestId('editor-announcements'),
   ).toContainText('Projeto carregado.');
   await app.inject({
     method: 'PUT',
@@ -231,7 +231,7 @@ test('conflito e carregamento inválido preservam o projeto local', async ({
     .getByRole('button', { name: 'Salvar projeto', exact: true })
     .click();
   await expect(
-    page.getByRole('status', { name: 'Alterações do programa' }),
+    page.getByTestId('editor-announcements'),
   ).toContainText('outra janela');
   await expect(
     page.getByText('Alterações não salvas.', { exact: true }),
@@ -250,7 +250,7 @@ test('conflito e carregamento inválido preservam o projeto local', async ({
     .getByRole('button', { name: 'Abrir Concorrente', exact: true })
     .click();
   await expect(
-    page.getByRole('status', { name: 'Alterações do programa' }),
+    page.getByTestId('editor-announcements'),
   ).toContainText('projeto inválido');
   await expect(
     page.getByRole('textbox', { name: 'Nome do projeto' }),

@@ -203,7 +203,7 @@ test('ponteiro anuncia novamente ao reentrar e iniciar publica a sequência sem 
   page,
 }) => {
   await page.goto('/experiments/editor');
-  const status = page.getByRole('status', { name: 'Alterações do programa' });
+  const status = page.getByTestId('editor-announcements');
   const start = page.getByRole('button', { name: 'Iniciar atividade' });
   const sequence = page.getByRole('status', { name: 'Sequência da atividade' });
   await start.press('Enter');
@@ -288,7 +288,7 @@ test('barra de ações desconecta somente o bloco selecionado e mantém os anún
   await expect(move).toBeFocused();
   await expect(move).toHaveAttribute('aria-label', /Solto/);
   await expect(disconnect).toBeDisabled();
-  const status = page.getByRole('status', { name: 'Alterações do programa' });
+  const status = page.getByTestId('editor-announcements');
   await expect(status).toContainText('Bloco desconectado.');
   await toolbar
     .getByRole('button', { name: 'Iniciar atividade' })

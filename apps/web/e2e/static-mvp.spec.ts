@@ -61,11 +61,11 @@ test('build estático abre, constrói e executa sem API ou armazenamento de prog
   await page
     .getByRole('button', { name: 'Iniciar programa', exact: true })
     .press('Enter');
+  await expect(page.locator('#execution-sequence')).toHaveText(
+    'Quando iniciar programa. Mover 10 passos.',
+  );
   await expect(
-    page.getByRole('status', { name: 'Alterações do programa' }),
-  ).toContainText('Programa iniciado.');
-  await expect(
-    page.getByRole('img', { name: /posição x 10, y 0/ }),
+    page.locator('.stage__character[data-x="10"][data-y="0"]'),
   ).toBeVisible();
   await expect(
     page.getByRole('button', { name: 'Iniciar programa', exact: true }),

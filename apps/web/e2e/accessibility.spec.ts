@@ -42,11 +42,11 @@ test('edita repetição e operador por teclado, atualiza nomes e exclui sem mous
     page.getByRole('figure', { name: /^Bloco operador:/ }),
   ).toHaveCount(0);
   await expect(
-    page.getByRole('status', { name: 'Alterações do programa' }),
+    page.getByTestId('editor-announcements'),
   ).toContainText('Bloco excluído');
 });
 
-test('anúncio inicial persiste, foco não salta e resultado é consultável sem anúncios por quadro', async ({
+test('anúncio inicial persiste, foco acompanha a leitura e resultado é consultável sem anúncios por quadro', async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -57,25 +57,26 @@ test('anúncio inicial persiste, foco não salta e resultado é consultável sem
     name: 'Iniciar programa',
     exact: true,
   });
-  const status = page.getByRole('status', { name: 'Alterações do programa' });
+  const status = page.getByTestId('editor-announcements');
   await start.press('Enter');
-  await expect(start).toBeFocused();
-  await expect(status).toContainText('Programa iniciado.');
-  await expect(status).toContainText('mover 10 passos');
-  const initial = await status.textContent();
+  const sequence = page.locator('#execution-sequence');
+  await expect(sequence).toBeFocused();
+  await expect(sequence).toHaveText(
+    'Quando iniciar programa. Mover 10 passos.',
+  );
+  await expect(status).toBeEmpty();
+  const initial = await sequence.textContent();
   await expect(start).toHaveAttribute('aria-disabled', 'false');
-  await expect(start).toBeFocused();
-  await expect(status).toHaveText(initial!);
+  await expect(sequence).toBeFocused();
+  await expect(sequence).toHaveText(initial!);
   await expect(page.locator('.stage [aria-live]')).toHaveCount(0);
   await expect(
-    page.getByRole('img', { name: /posição x 10, y 0/ }),
+    page.getByRole('img', { name: /avançou 10 passos/ }),
   ).toBeVisible();
   await expect(page.locator('.program-summary')).toHaveCount(0);
-  const first = await status.locator('span').elementHandle();
+
   await start.press('Enter');
-  await expect
-    .poll(() => first!.evaluate((element) => element.isConnected))
-    .toBe(false);
+  await expect(sequence).toBeFocused();
   const stop = page.getByRole('button', {
     name: 'Parar programa',
     exact: true,
@@ -100,7 +101,7 @@ test('ponteiro lê o bloco conectado sem mover foco nem repetir ao cruzar seu te
     name: /^Bloco de movimento: mover 10 passos/,
   });
   await inner.locator('..').locator('text').first().hover();
-  const status = page.getByRole('status', { name: 'Alterações do programa' });
+  const status = page.getByTestId('editor-announcements');
   await expect(status).toContainText('Conectado.');
   await expect(start).toBeFocused();
   const text = await status.textContent();

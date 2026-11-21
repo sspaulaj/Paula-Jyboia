@@ -16,11 +16,12 @@ for (const width of [1440, 900, 600]) {
       ['Eventos', ['quando iniciar']],
     ] as const) {
       const button = categories.getByRole('button', {
-        name: label,
+        name: `Escolher blocos de ${label.toLocaleLowerCase('pt-BR')}`,
         exact: true,
       });
       await button.click();
-      await expect(button).toHaveAttribute('aria-pressed', 'true');
+      await expect(button).toHaveAttribute('aria-current', 'true');
+      await expect(button).not.toHaveAttribute('aria-pressed');
       const options = host.getByRole('option');
       await expect(options).toHaveCount(names.length);
       for (let index = 0; index < names.length; index++) {
@@ -54,14 +55,14 @@ for (const width of [1440, 900, 600]) {
         expect(hostBox.x + hostBox.width).toBeLessThanOrEqual(rightBox.x + 1);
     }
     await categories
-      .getByRole('button', { name: 'Controle', exact: true })
+      .getByRole('button', { name: 'Escolher blocos de controle', exact: true })
       .click();
     await expect(page.getByRole('option', { name: /^Bloco de/ })).toHaveCount(
       4,
     );
     await expect(
-      page.getByRole('status', { name: 'Alterações do programa' }),
-    ).toContainText('Blocos de Controle disponíveis');
+      page.getByTestId('editor-announcements'),
+    ).toBeEmpty();
     expect(errors).toEqual([]);
   });
 }
@@ -72,7 +73,7 @@ test('trocar categoria preserva os blocos inseridos e permite escolher com tecla
   await page.goto('/');
   const events = page
     .locator('.category-panel')
-    .getByRole('button', { name: 'Eventos', exact: true });
+    .getByRole('button', { name: 'Escolher blocos de eventos', exact: true });
   await events.focus();
   await events.press('Enter');
   await expect(events).toBeFocused();
@@ -90,7 +91,7 @@ test('trocar categoria preserva os blocos inseridos e permite escolher com tecla
   ).toHaveCount(1);
   await page
     .locator('.category-panel')
-    .getByRole('button', { name: 'Movimento', exact: true })
+    .getByRole('button', { name: 'Escolher blocos de movimento', exact: true })
     .click();
   await expect(page.getByTestId('editor-host').getByRole('option')).toHaveCount(
     3,

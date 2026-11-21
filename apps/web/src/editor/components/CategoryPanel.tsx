@@ -17,7 +17,7 @@ export function CategoryPanel({ selected, onSelect }: CategoryPanelProps) {
               <button
                 type="button"
                 className="category-panel__item"
-                aria-pressed={isSelected}
+                aria-label={`Escolher blocos de ${cat.label.toLocaleLowerCase('pt-BR')}`}
                 aria-controls="block-editor"
                 aria-current={isSelected ? 'true' : undefined}
                 onClick={() => onSelect(cat.id)}

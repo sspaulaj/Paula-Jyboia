@@ -95,7 +95,7 @@ export default function EditorExperiment() {
       <div className="editor-host" ref={host} data-testid="editor-host" />
       <p
         role="status"
-        aria-label="Alterações do programa"
+        data-testid="editor-announcements"
         aria-live="polite"
         aria-atomic="true"
         className="screen-reader-only"

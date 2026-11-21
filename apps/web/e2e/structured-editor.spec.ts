@@ -17,7 +17,7 @@ test('constrói e executa pela paleta sem os painéis removidos', async ({
     .getByRole('button', { name: 'Iniciar programa', exact: true })
     .press('Enter');
   await expect(
-    page.getByRole('img', { name: /posição x 10, y 0/ }),
+    page.locator('.stage__character[data-x="10"][data-y="0"]'),
   ).toBeVisible();
 });
 
@@ -50,7 +50,7 @@ test('condicional sem operador continua apresentando diagnóstico acessível', a
     .getByRole('button', { name: 'Iniciar programa', exact: true })
     .press('Enter');
   await expect(
-    page.getByRole('status', { name: 'Alterações do programa' }),
+    page.getByTestId('editor-announcements'),
   ).toContainText('Encaixe um operador');
 });
 

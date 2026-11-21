@@ -2,6 +2,7 @@
 export function createAnnouncements(publish: (text: string) => void) {
   let timer: ReturnType<typeof setTimeout> | undefined;
   let executing = false;
+  let editingSuspended = false;
   let lastEdit = '';
   let lastEditAt = 0;
   const clear = () => {
@@ -9,8 +10,12 @@ export function createAnnouncements(publish: (text: string) => void) {
     timer = undefined;
   };
   return {
-    edit(text: string) {
-      if (executing || (text === lastEdit && Date.now() - lastEditAt < 600))
+    edit(text: string, newPointerEntry = false) {
+      if (
+        executing ||
+        editingSuspended ||
+        (!newPointerEntry && text === lastEdit && Date.now() - lastEditAt < 600)
+      )
         return;
       clear();
       timer = setTimeout(() => {
@@ -22,8 +27,19 @@ export function createAnnouncements(publish: (text: string) => void) {
     },
     execution(text: string) {
       clear();
+      editingSuspended = true;
       lastEdit = '';
       publish(text);
+    },
+    beginSequence() {
+      clear();
+      executing = true;
+      editingSuspended = true;
+      lastEdit = '';
+      publish('');
+    },
+    resumeEditing() {
+      if (!executing) editingSuspended = false;
     },
     setExecuting(value: boolean) {
       executing = value;

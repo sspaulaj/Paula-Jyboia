@@ -3,64 +3,13 @@ import {
   createExecution,
   initialActorState,
 } from '@jyboia/block-engine/runtime';
-import {
-  inspectProgram,
-  type PrototypeProgram,
-} from '@jyboia/block-engine/experimental';
+
+import { announceSequence } from './execution-description';
 import type { mountEditor } from '../experiment/blockly-adapter';
 import { describeSequence } from '../experiment/descriptions';
 import type { ExecutionState } from './types';
 import { ProgramError } from '@jyboia/block-engine/experimental';
 import type { createAnnouncements } from './announcements';
-
-function announceSequence(program: PrototypeProgram): string {
-  const { sequence } = inspectProgram(program);
-  if (!sequence.length) return 'Nenhuma sequência definida.';
-  const byId = new Map(program.blocks.map((block) => [block.id, block]));
-  const labels: string[] = [];
-  const walk = (id: string | null) => {
-    while (id) {
-      const block = byId.get(id)!;
-      labels.push(describeBlockBrief(block, program));
-      if ('body' in block && block.body) walk(block.body);
-      id = block.next ?? null;
-    }
-  };
-  const { starts } = inspectProgram(program);
-  for (const start of starts) walk(start.id);
-  return `Sequência: ${labels.join(', ')}.`;
-}
-
-function describeBlockBrief(
-  block: Parameters<typeof import('../experiment/descriptions').describeBlock>[0],
-  program: PrototypeProgram,
-): string {
-  switch (block.kind) {
-    case 'start':    return 'quando iniciar';
-    case 'move':     return `mover ${block.steps} passos`;
-    case 'turn':     return `girar ${Math.abs(block.degrees)} graus`;
-    case 'goto':     return `ir para x ${block.x}, y ${block.y}`;
-    case 'show':     return 'mostrar personagem';
-    case 'hide':     return 'esconder personagem';
-    case 'say':      return `dizer ${block.text || 'texto vazio'}`;
-    case 'wait':     return `esperar ${block.seconds} segundos`;
-    case 'repeat':   return `repetir ${block.times} vezes`;
-    case 'forever':  return 'sempre';
-    case 'if': {
-      const cond = program.blocks.find((b) => b.id === block.condition);
-      const expr =
-        cond && 'left' in cond
-          ? `${cond.left} ${{ gt: 'maior que', lt: 'menor que', eq: 'igual a' }[cond.kind]} ${cond.right}`
-          : 'condição';
-      return `se ${expr}`;
-    }
-    case 'set':      return `definir ${block.name} como ${block.value}`;
-    case 'change':   return `alterar ${block.name} por ${block.value}`;
-    case 'gt':       return `${block.left} maior que ${block.right}`;
-    case 'lt':       return `${block.left} menor que ${block.right}`;
-    case 'eq':       return `${block.left} igual a ${block.right}`;
-  }
-}
 
 function errorMessage(code: string) {
   const messages: Record<string, string> = {
@@ -78,9 +27,11 @@ function errorMessage(code: string) {
 export function useProgramExecution(
   editorRef: React.RefObject<ReturnType<typeof mountEditor> | null>,
   announcements: ReturnType<typeof createAnnouncements>,
+  presentSequence: (text: string) => void,
 ) {
   const [executionState, setExecutionState] = useState<ExecutionState>('idle');
   const [actor, setActor] = useState(initialActorState);
+  const [movementDescription, setMovementDescription] = useState('');
   const [error, setError] = useState<{
     message: string;
     blockId?: string;
@@ -121,13 +72,23 @@ export function useProgramExecution(
         () => performance.now(),
         initial,
       );
+      // Fast Refresh can retain instances created before these methods existed.
+      // Keep the in-memory program executable without forcing a page reload.
+      editor.prepareExecution?.();
+      if (announcements.beginSequence) announcements.beginSequence();
+      else {
+        announcements.setExecuting(true);
+        announcements.execution('');
+      }
+      presentSequence(announceSequence(program));
       execution.current = run;
       setActor({ ...initialActorState(), ...initial });
       setExecutionState('running');
       const description = describeSequence(program);
       setInitialDescription(description);
       announcements.setExecuting(true);
-      announce(`Iniciar programa. ${announceSequence(program)}`);
+      setMovementDescription('');
+      let previousActor = { ...initialActorState(), ...initial };
       const advance = () => {
         if (execution.current !== run) return;
         for (const event of run.advance()) {
@@ -138,6 +99,18 @@ export function useProgramExecution(
           } else if (event.type === 'commandStarted') {
             editor.workspace.highlightBlock(event.blockId);
           } else if (event.type === 'actorStateChanged') {
+            const block = program.blocks.find(
+              (item) => item.id === event.blockId,
+            );
+            if (block?.kind === 'move') {
+              const distance = event.state.x - previousActor.x;
+              setMovementDescription(
+                `O personagem ${distance < 0 ? 'recuou' : 'avançou'} ${Math.abs(distance)} passos.`,
+              );
+            } else if (block?.kind === 'goto') {
+              setMovementDescription('O personagem mudou de posição.');
+            }
+            previousActor = event.state;
             setActor(event.state);
           } else {
             execution.current = null;
@@ -158,14 +131,24 @@ export function useProgramExecution(
       };
       advance();
     } catch (failure) {
+      if (timer.current !== null) clearTimeout(timer.current);
+      timer.current = null;
+      execution.current?.cancel();
+      execution.current = null;
+      setExecutionState('idle');
+      announcements.setExecuting(false);
       const diagnostic =
         failure instanceof ProgramError
           ? failure
           : new ProgramError('INVALID_PROGRAM');
-      setError({
-        message: `Não foi possível iniciar. ${errorMessage(diagnostic.code)}`,
-        ...(diagnostic.blockId ? { blockId: diagnostic.blockId } : {}),
-      });
+      setError(
+        diagnostic.code === 'INVALID_ENTRY'
+          ? null
+          : {
+              message: `Não foi possível iniciar. ${errorMessage(diagnostic.code)}`,
+              ...(diagnostic.blockId ? { blockId: diagnostic.blockId } : {}),
+            },
+      );
       announce(`Não foi possível iniciar. ${errorMessage(diagnostic.code)}`);
     }
   };
@@ -185,6 +168,7 @@ export function useProgramExecution(
   };
   return {
     actor,
+    movementDescription,
     executionState,
     initialDescription,
     start,
