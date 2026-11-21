@@ -1,5 +1,76 @@
 # Validação assistiva do editor
 
+## Hover sem repetição — 21/11/2026
+
+- `pnpm test`: 76 testes aprovados; inclui reentrada rápida com texto idêntico e
+  bloqueio de hover durante execução.
+- Playwright/Edge 158.0.4370.33: 14 cenários existentes de editor, acessibilidade e
+  execução aprovados. Os 2 novos cenários de `pointer-hover.spec.ts` passaram na
+  execução final: paleta e editor, 10 segundos parado, eventos repetidos sem
+  deslocamento, passagem entre campos, saída/reentrada e preservação de foco.
+- Lint e build de produção (incluindo TypeScript) aprovados. O aviso prévio de
+  tamanho do bundle permanece. Servidores de teste encerrados manualmente após os
+  cenários, devido à limitação de encerramento automático neste ambiente Windows.
+- NVDA/Firefox e NVDA/Chrome: não executados nesta alteração. Confirmar fala única
+  enquanto parado, nova fala ao retornar e ausência de interferência no teclado.
+  Testes de DOM não comprovam silêncio nem controlam anúncios próprios do leitor.
+
+## Correção de prioridade — 18/11/2026
+
+Revisão do clique após atualização: reproduzida falha ao executar com objetos do
+editor/coordenador anteriores à introdução de `prepareExecution`/`beginSequence`.
+O início agora tolera essas instâncias mantidas em memória durante Fast Refresh,
+sem exigir recarregar e perder os blocos. Erros na inicialização também liberam o
+estado de execução para permitir nova tentativa. Os dois testes de contrato anterior
+falharam antes da correção; depois, os 7 cenários de `execution-refresh.spec.ts` e
+`execution-announcements.spec.ts` passaram. Isso reproduz uma causa possível do
+relato do usuário; não confirma o estado da página que ele estava utilizando.
+
+Verificação automatizada no Windows/Edge 157.0.4341.60:
+
+- `pnpm test`: 75 testes aprovados em 15 arquivos.
+- `pnpm test:e2e`: 25 cenários aprovados; após os ajustes finais de cancelamento
+  de dicas e retomada por movimento, repetidos os 8 cenários de `accessibility.spec.ts`
+  e `execution-announcements.spec.ts`, todos aprovados, incluindo captura de erros
+  do navegador nos casos novos. A paleta também passou nas três larguras testadas.
+- `pnpm exec playwright test --config playwright.static.config.ts`: 1 cenário aprovado
+  no build estático, sem API ou persistência (antes dos dois ajustes finais acima).
+- `pnpm lint`, `pnpm build:web` (inclui TypeScript) e `git diff --check`: aprovados.
+  Permanece o aviso de tamanho do bundle Blockly, sem erro de compilação.
+
+Os servidores Vite de teste precisaram de encerramento manual após os cenários,
+pois o encerramento automático de processos não concluía neste ambiente Windows.
+Falhas intermediárias foram tratadas: expectativa antiga de anúncio de categoria,
+instalação tardia do relógio simulado deixando uma dica com temporizador real e
+retomada indevida de avisos por `pointerover` na saída de `inert`.
+
+Não executado com NVDA/Firefox, NVDA/Chrome ou VoiceOver/Safari nesta correção.
+Executar cada cenário por clique com ponteiro imóvel sobre Iniciar e por teclado.
+Registrar versões, modo do NVDA, rastreamento de mouse, apresentação de objetos,
+fala literal e interrupções no Visualizador de fala. Inspeção de DOM não confirma fala.
+
+1. Quando iniciar → Diga Olá: ouvir “Quando iniciar programa. Diga Olá.” por inteiro,
+   ver Olá no palco e verificar que a indisponibilidade de Iniciar não interrompe.
+2. Quando iniciar → Mover 10 → Diga Olá: ouvir os três comandos em ordem, sem
+   coordenadas automáticas; consultar o palco e encontrar a descrição do movimento.
+3. Confirmar foco na leitura da sequência antes da mudança de estado de Iniciar,
+   sem mover o ponteiro. Ao terminar, Iniciar disponível, Parar indisponível e foco
+   ainda na sequência. Nenhum deslocamento do mouse deve ser necessário.
+4. Navegar até Parar antes de iniciar: ouvir seu nome e indisponibilidade. Durante
+   a execução, Tab da sequência deve chegar a Parar; ativar deve interromper de fato.
+5. Reiniciar duas vezes, executar sequência longa/aninhada, interromper, tentar
+   programa inválido e inserir bloco solto. Sem repetição por dois canais nem leitura
+   de blocos desconectados; comandos internos com limites compreensíveis.
+6. Voltar à paleta/edição: leitura sob ponteiro e teclado continua disponível.
+   Categorias anunciam o nome solicitado e o estado atual conforme o leitor.
+   Ir para X/Y preserva parâmetros acessíveis; mover junto à borda descreve apenas
+   o deslocamento efetivo, sem inventar passos que não ocorreram.
+
+Se houver interrupção pelo estado do botão mesmo com foco na sequência, registrar
+como falha do cenário, sem declarar o problema resolvido. Não remover estados reais
+nem ocultar controles para mascarar o resultado. Ver estratégia e limitações em
+[ACCESSIBILITY](ACCESSIBILITY.md#prioridade-da-leitura-ao-iniciar--revisão-de-18112026).
+
 ## MVP estático — verificação manual pendente em 18/11/2026
 
 Confirmar com NVDA/Firefox, NVDA/Chrome e VoiceOver/Safari que o aviso Sobre seu trabalho é encontrado e compreendido antes da edição. Construir, editar, percorrer e executar pelo teclado; verificar sequência anunciada e resultados do palco. Recarregar deve apresentar editor vazio e o mesmo aviso. Não existem controles de login ou salvamento no MVP. Registrar versões e fala observada; nenhum teste real com esses leitores foi executado nesta fase.

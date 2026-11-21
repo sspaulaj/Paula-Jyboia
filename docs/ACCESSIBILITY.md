@@ -1,5 +1,78 @@
 # Arquitetura de acessibilidade
 
+Ao tentar iniciar sem um bloco de início (editor vazio ou somente comandos soltos),
+o aviso é publicado apenas na região de estado visualmente oculta, mantendo o foco
+em Iniciar. Não há cópia desse aviso abaixo do palco. Os demais diagnósticos e os
+atalhos para localizar blocos com erro permanecem disponíveis.
+
+## Leitura única por entrada do ponteiro — 21/11/2026
+
+Na paleta e no editor, o adaptador acompanha o bloco inteiro e a posição do
+ponteiro. Permanecer no bloco, cruzar seus textos/campos ou receber novos eventos
+de fronteira sem mudar a posição não agenda outra leitura. Sair efetivamente
+cancela a leitura pendente e permite anunciar novamente ao retornar, inclusive
+antes do intervalo de deduplicação de outras mensagens. Arrastar não anuncia
+hover; foco e descrições por teclado continuam independentes.
+
+Os testes verificam atualizações da região de estado, permanência, reentrada e
+preservação do foco. Ainda é necessário validar com NVDA/Firefox e NVDA/Chrome:
+parar sobre cada bloco por 10 segundos, cruzar seus campos e sair/voltar rapidamente.
+O resultado esperado é uma leitura por entrada, sem loop. Esta regra controla os
+anúncios do Jyboia; não comprova nem suprime falas próprias do rastreamento do NVDA.
+
+## Prioridade da leitura ao iniciar — revisão de 18/11/2026
+
+O fluxo anterior mantinha o foco em Iniciar ao mudar `aria-disabled` e publicava
+a sequência na mesma região `status` das alterações de edição. Esses são canais
+concorrentes: a prioridade `polite` não controla os anúncios de foco/estado do NVDA.
+O nome dinâmico do palco também continha coordenadas, mesmo sem região viva no palco.
+Esta análise identifica fontes no código; a ordem real da fala depende de teste assistivo.
+
+Após validar o programa, a aplicação limpa os avisos de edição e renderiza a sequência
+conectada em uma área de leitura junto aos controles. O foco vai para essa sequência
+antes de Iniciar receber `aria-disabled="true"`. A atualização síncrona do DOM
+(`flushSync`) garante essa ordem, sem aguardar um tempo estimado de fala. A sequência
+não é uma região viva e não é publicada novamente em `status`: seu nome acessível
+contém, por exemplo, “Quando iniciar programa. Diga Olá.”. Por solicitação de
+21/11/2026, o texto permanece visualmente oculto, inclusive com foco, sem `hidden`,
+`display: none` ou `aria-hidden`. O foco de teclado é indicado no grupo de controles;
+permanece consultável e não é um segundo editor. O foco não retorna automaticamente
+ao concluir; Tab a partir da leitura leva a Parar. Uma nova ativação repete a leitura
+por foco, mesmo se o texto for idêntico. Programas inválidos mantêm foco em Iniciar
+e comunicam o diagnóstico na região de estado.
+
+Ambos os botões mantêm `aria-disabled` verdadeiro e guardas contra ativação indevida.
+Parar continua focável e identificável como indisponível antes/depois da execução.
+Mensagens de edição pendentes são descartadas e eventos tardios ficam bloqueados até
+novo movimento do ponteiro, clique ou tecla. `pointerover` não reativa esses avisos:
+o navegador pode emiti-lo quando o editor deixa de estar `inert`, sem movimento
+do mouse. Erros e interrupção continuam comunicados; não há anúncio por quadro.
+O adaptador cancela também dicas do Blockly e restaurações de foco pendentes da
+inserção ao preparar a execução. Isso evita uma dica atrasada e impede que a última
+inserção volte a tomar o foco da leitura.
+As categorias têm nomes “Escolher blocos de movimento”, etc., com `aria-current`
+para a categoria atual, sem duplicação por `aria-pressed` nem aviso adicional de paleta.
+
+O palco mantém coordenadas internas, mas seu nome acessível apresenta ações como
+“O personagem avançou 10 passos” e a fala atual. O deslocamento é calculado a partir
+do resultado real, inclusive nos limites do palco. Ir para X/Y descreve a mudança
+de posição sem narrar coordenadas de resultado. Os parâmetros explícitos de Ir para
+X/Y continuam disponíveis nos blocos e na descrição do programa.
+
+**Limite:** não existe API web para suprimir seletivamente uma fala do NVDA ou
+confirmar o término da leitura. A solução reduz concorrência por foco, mas não
+garante silêncio de anúncios nativos sob o ponteiro. Não usa `aria-hidden` nos
+botões, estado falso, sintetizador próprio, atraso artificial ou foco em elemento
+sem relação com a ação. Se o rastreamento de mouse ainda interromper a leitura em
+uma combinação específica, registrar a fala e versões antes de alterar a estratégia;
+a sequência permanece disponível para leitura pelo cursor virtual. Não exigir mover
+o mouse nem desativar o rastreamento como condição de uso.
+
+Referências: [WAI-ARIA: status e foco](https://www.w3.org/TR/wai-aria/#status),
+[guia NVDA: configurações do mouse](https://api.nvaccess.org/documentation/userGuide.html#MouseSettings).
+Os trechos históricos abaixo sobre foco permanecer em Iniciar e leitura inicial via
+`status` são substituídos por esta revisão. Validação real ainda pendente.
+
 ## MVP em memória
 
 Atualização posterior em 18/11/2026: o usuário solicitou remover o aviso de perda e os dois painéis completos, incluindo controles de organização e consulta de resultado. A interface atual não contém esses elementos. A descrição do palco e os anúncios de execução continuam acessíveis; os testes foram adaptados para operar diretamente pela paleta e pelo teclado do Blockly. Os parágrafos abaixo sobre o aviso e os painéis registram o comportamento anterior, não a interface vigente. Reavaliar manualmente as alternativas de conexão e consulta após esta remoção; a automação não comprova aceitação assistiva.

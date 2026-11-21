@@ -117,7 +117,7 @@ Validação da simplificação: build, lint e tipos aprovados; cinco cenários a
 
 ## Leitura sequencial ao iniciar
 
-Iniciar atividade captura os blocos alcançáveis a partir de Quando iniciar, seguindo as conexões next e os parâmetros atuais. Publica toda a sequência em uma atualização atômica da região Sequência da atividade, separada da região Alterações do programa. Assim, não se tenta adivinhar por temporizador quando o leitor terminou um bloco. Blocos soltos não entram na lista de comandos; sem início ou com entradas ambíguas, anuncia-se o diagnóstico. O contorno continua identificando o ponteiro, sem simular sincronização com a fala.
+Iniciar atividade captura os blocos alcançáveis a partir de Quando iniciar, seguindo as conexões next e os parâmetros atuais. Publica toda a sequência em uma atualização atômica da região Sequência da atividade, separada da região de avisos de edição. Assim, não se tenta adivinhar por temporizador quando o leitor terminou um bloco. Blocos soltos não entram na lista de comandos; sem início ou com entradas ambíguas, anuncia-se o diagnóstico. O contorno continua identificando o ponteiro, sem simular sincronização com a fala.
 
 Regressões verificam ordem dos quatro tipos, parâmetros editados, exclusão de bloco desconectado, início repetido e preservação do texto da sequência após hover. Validação de fala real permanece pendente.
 
