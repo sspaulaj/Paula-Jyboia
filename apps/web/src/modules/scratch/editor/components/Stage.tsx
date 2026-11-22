@@ -1,5 +1,5 @@
 import type { ActorState } from '@jyboia/block-engine/runtime';
-import jyboiaMascote from '../../assets/jyboia-mascote.svg';
+import jyboiaMascote from '../../../../assets/jyboia-mascote.svg';
 import type { ExecutionState } from '../types';
 
 interface StageProps {

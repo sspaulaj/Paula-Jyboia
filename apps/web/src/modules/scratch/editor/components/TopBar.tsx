@@ -1,4 +1,4 @@
-import jyboiaMascote from '../../assets/jyboia-mascote.svg';
+import jyboiaMascote from '../../../../assets/jyboia-mascote.svg';
 interface TopBarProps {
   isDisconnectEnabled: boolean;
   onEnterEditor: () => void;

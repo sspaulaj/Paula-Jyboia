@@ -5,6 +5,8 @@ test-results/
 playwright-report/
 .env
 .env.*
+!.env.example
+!.env.*.example
 *.tsbuildinfo
 *.log
 .tools/
@@ -22,12 +24,10 @@ id_ed25519*
 cdk.out/
 cdk.context.json
 
-.vercel
-.env*
-
-# Arquivos locais — não vão ao repositório
-.env.example
-.agents/
-AGENTS.md
-infra/
-apps/web/vercel.json
+# Configuração local de autenticação e certificados; código/docs são versionáveis.
+*.p12
+*.pfx
+.npmrc.local
+credentials
+credentials.json
+service-account*.json

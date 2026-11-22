@@ -1,5 +1,19 @@
 # Decisões arquiteturais
 
+## D-2026-11-22 — Módulos pedagógicos independentes
+
+**Status:** adotada na Fase B. **Contexto:** expandir Jyboia sem reescrever Scratch ou prejudicar acessibilidade. **Alternativas:** editor genérico com condicionais de linguagem, reescrita do Scratch ou módulos separados. **Decisão:** encapsular `editor` e `experiment` juntos em `modules/scratch`, manter motor/documentos existentes, preparar `modules/python`, compor rotas em `app` e compartilhar inicialmente somente coordenação de anúncios. `/` continua Scratch; `/scratch` é explícita; `/python` é preparatória.
+
+**Consequências:** regras e runtime não são compartilhados entre linguagens; CSS Python é local. Rotas atuais são entradas de documento, sem novo seletor ou mecanismo de persistência. Futuro roteamento SPA precisará tratar memória, foco e cancelamento. Docs por área e skills específicas complementam instruções globais; código e docs sem segredos deixam de ser ignorados. **Evidências:** [validação da Fase B](../apps/web/docs/VALIDATION.md).
+
+## D-2026-11-22-PY — Python com terminal e execução no navegador
+
+**Status:** arquitetura alvo aprovada; implementação não iniciada. **Contexto:** decisão posterior do produto exige print/input, condicionais/repetições, Iniciar/Parar, erros acessíveis e interrupção. Substitui a proposta anterior de somente gerar código.
+
+**Alternativas:** execução remota, runtime na thread principal, ou Pyodide em Worker. **Decisão:** primeira opção Pyodide em Worker, independente de React e do motor Scratch; não executar no backend/AWS no MVP. Aproveitar gerador Blockly com adaptações de semântica Python. Modelo único por módulo alimenta geração e acessibilidade.
+
+**Consequências:** input síncrono precisa de ponte comprovada; investigar espera no Worker com SharedArrayBuffer e formulário na UI, isolamento COOP/COEP, UTF-8 e cancelamento. Interrupção cooperativa deve ter fallback de término definitivo; Worker não é sandbox de código hostil. Somente geração de catálogo autorizado, com limites e nenhuma execução livre do texto. Não instalar runtime, criar Worker ou habilitar cabeçalhos nesta Fase B. **Evidências e gates:** [plano Python e fontes oficiais](../apps/web/docs/PYTHON.md).
+
 ## D-19 — Publicação estática na Vercel
 
 Manter um único monorepo privado no GitHub, com projeto Vercel `jyboia` apontando para `apps/web`, preset Vite e saída `dist`. Instalar pelo lockfile na raiz com Corepack/pnpm e compilar apenas pacotes compartilhados e frontend. Permitir arquivos externos à raiz da aplicação para resolver os pacotes do workspace. API e infraestrutura ficam fora do artefato publicado; `infra/aws` está somente reservado, sem stacks ou comandos AWS. Usar rewrite SPA para `index.html`. Nenhuma variável `VITE_` é necessária. A criação do remoto, primeiro push e produção dependem da autorização explícita solicitada pelo usuário.

@@ -1,5 +1,7 @@
 # MVP estático — 18/11/2026
 
+Atualização modular de 22/11/2026: `/` e `/scratch` mantêm o editor; `/python` apresenta página preparatória. Build e uso continuam sem API, banco ou persistência. Pyodide/terminal são planejamento futuro, sem runtime instalado nesta fase. Rotas e evidências atuais: [NAVIGATION](../apps/web/docs/NAVIGATION.md) e [VALIDATION](../apps/web/docs/VALIDATION.md). Os resultados abaixo são históricos.
+
 Atualização posterior de interface: removidos por solicitação os dois painéis completos (“Organizar blocos sem arrastar” e “Programa e resultado”) e a mensagem sobre perda do trabalho. O teste estático atual verifica a ausência desses elementos e constrói Quando iniciar → Mover 10 passos diretamente pela paleta, esperando x=10. Memória temporária, ausência de API/armazenamento e editor vazio após recarga permanecem. As referências abaixo ao aviso e ao exemplo automático descrevem a entrega anterior.
 
 ## Escopo e publicação

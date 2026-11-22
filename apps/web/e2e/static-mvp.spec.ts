@@ -1,6 +1,34 @@
 import { expect, test } from '@playwright/test';
 import { buildMovementProgram } from './editor-helpers';
 
+for (const path of ['/scratch', '/python']) {
+  test(`acesso direto e recarga em ${path} no build estático`, async ({
+    page,
+  }) => {
+    const dynamicRequests: string[] = [];
+    page.on('request', (request) => {
+      if (['fetch', 'xhr', 'websocket'].includes(request.resourceType()))
+        dynamicRequests.push(request.url());
+    });
+    await page.goto(path);
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (path === '/scratch') {
+        await expect(page.getByTestId('editor-host')).toBeVisible();
+        await expect(
+          page.getByRole('button', { name: 'Iniciar programa', exact: true }),
+        ).toBeVisible();
+      } else {
+        await expect(
+          page.getByRole('heading', { name: 'Python por blocos' }),
+        ).toBeVisible();
+        await expect(page.getByTestId('editor-host')).toHaveCount(0);
+      }
+      if (attempt === 0) await page.reload();
+    }
+    expect(dynamicRequests).toEqual([]);
+  });
+}
+
 test('build estático abre, constrói e executa sem API ou armazenamento de programas', async ({
   page,
 }) => {

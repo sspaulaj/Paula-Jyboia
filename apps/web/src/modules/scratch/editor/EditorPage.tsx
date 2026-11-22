@@ -11,7 +11,7 @@ import {
 import { ExecutionControls } from './components/ExecutionControls';
 import { useProgramExecution } from './useProgramExecution';
 import { connections } from '@jyboia/block-engine/experimental';
-import { createAnnouncements } from './announcements';
+import { createAnnouncements } from '../../../shared/accessibility/announcements';
 import type {
   EditorSnapshot,
   mountEditor,

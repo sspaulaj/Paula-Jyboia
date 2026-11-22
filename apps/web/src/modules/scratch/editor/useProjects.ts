@@ -13,7 +13,7 @@ import type {
   mountEditor,
 } from '../experiment/blockly-adapter';
 import { documentKey } from '../experiment/project-adapter';
-import { projectsClient } from '../api/projects';
+import { projectsClient } from '../../../api/projects';
 
 const emptyDocument = (): EditorDocument => ({
   schemaVersion: 2,

@@ -1,5 +1,15 @@
 # Roadmap do Jyboia
 
+## Atualização modular — 22/11/2026
+
+1. **Fase B atual:** investigar baseline, encapsular Scratch, extrair somente coordenação comum de anúncios, preparar rotas, docs e skills. Aceitação: Scratch preservado, testes completos repetidos sem builds concorrentes, build estático com acesso direto às duas rotas e exclusões de segredos mantidas. Evidências em [VALIDATION](../apps/web/docs/VALIDATION.md).
+2. **Prova técnica Python, próxima entrega a solicitar:** Pyodide em Worker, terminal mínimo de teste, input com UI responsiva e cancelamento em laços/espera. Validar isolamento de origem, assets, erro de inicialização, limites e reinício. Não considerar `setStdin` assíncrono sem demonstração.
+3. **Modelo, catálogo e geração:** implementar o escopo pedagógico em [PYTHON](../apps/web/docs/PYTHON.md), com regras e semântica próprias, código válido e mapeamento bloco/linha. Aceitação: tipos, ordem, aninhamento, precedência e escapes testados; Scratch independente.
+4. **Editor Python e terminal:** integrar código, execução, print/input, erros e controles acessíveis, sem backend. Aceitação: fluxo completo, limites, interrupção e ausência de mensagens de execuções anteriores.
+5. **Validação assistiva/educacional:** NVDA/Firefox, NVDA/Chrome, VoiceOver/Safari e público-alvo; medir carregamento/execução em equipamentos escolares. Aprovação exige evidência real, não somente testes DOM.
+
+Não antecipar etapas 2–5 nesta Fase B. Autenticação, persistência e AWS continuam em escopo futuro separado. O objetivo Python agora inclui execução local, substituindo o plano anterior de apenas gerar código.
+
 Atualização de 18/11/2026: escopo definitivo do MVP substitui a entrega pública de persistência. Editor e motor serão publicados como aplicação estática, sem contas, API, banco ou salvamento. A integração anterior é evidência histórica e seu código permanece preservado.
 
 ## Prioridades vigentes para o MVP

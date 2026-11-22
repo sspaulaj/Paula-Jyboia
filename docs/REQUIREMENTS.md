@@ -4,6 +4,17 @@ Status: MVP público estático definido em 18/11/2026. Requisitos de servidor s�
 
 ## Requisitos funcionais
 
+Atualização modular de 22/11/2026: RF-01 significa um editor por módulo para todas as formas de interação. RF-07 e regras de personagens pertencem ao Scratch. Requisitos do runtime Python abaixo são planejados, não implementados pela Fase B.
+
+| ID | Requisito adicional | Critério |
+| --- | --- | --- |
+| RF-15 | Rotas independentes | `/` e `/scratch` preservam Scratch; `/python` tem página preparatória isolada, acessível e sem runtime antecipado. |
+| RF-16 | Python: geração e consulta | Modelo próprio gera código válido, selecionável e copiável; mesma estrutura alimenta descrições, com ordem explícita e diagnósticos por bloco. Entrega futura. |
+| RF-17 | Python: terminal interativo | `print`, input acessível, condicionais/repetições e erros executados somente no navegador. Entrega futura. |
+| RF-18 | Python: cancelamento | Iniciar/Parar com estados verdadeiros, interrupção durante input/laço/carregamento, descarte de mensagens antigas e reinício limpo. Entrega futura. |
+
+RNF-13: módulos não importam um ao outro; runtime Python independente do motor Scratch. Pyodide em Worker é candidato preferencial, sujeito a prova de input, cancelamento, segurança e compatibilidade da hospedagem. RNF-08 continua aplicável ao interpretador Scratch; para Python, executar apenas geração do catálogo aprovado e aplicar as restrições/limites de [PYTHON](../apps/web/docs/PYTHON.md). Worker não prova isolamento de código hostil. Não há login, persistência ou execução Python no servidor nesta fase.
+
 | ID | Requisito | Critério de aceitação |
 | --- | --- | --- |
 | RF-01 | Oferecer um único editor para todos os usuários. | Mouse, teclado e leitor de tela operam o mesmo programa e estado; não existe editor assistivo separado. |

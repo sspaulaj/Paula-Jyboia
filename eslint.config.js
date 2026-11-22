@@ -24,6 +24,37 @@ export default [
     languageOptions: { globals: globals.browser },
   },
   {
+    files: ['apps/web/src/modules/scratch/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        { patterns: ['**/python', '**/python/**'] },
+      ],
+    },
+  },
+  {
+    files: ['apps/web/src/modules/python/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            '**/scratch',
+            '**/scratch/**',
+            '@jyboia/block-engine',
+            '@jyboia/block-engine/*',
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['apps/web/src/shared/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: ['**/modules/**'] }],
+    },
+  },
+  {
     files: ['packages/block-engine/src/**/*.ts'],
     languageOptions: {
       globals: {

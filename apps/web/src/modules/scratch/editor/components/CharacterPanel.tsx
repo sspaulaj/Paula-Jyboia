@@ -1,4 +1,4 @@
-import jyboiaMascote from '../../assets/jyboia-mascote.svg';
+import jyboiaMascote from '../../../../assets/jyboia-mascote.svg';
 
 export interface Character {
   id: string;

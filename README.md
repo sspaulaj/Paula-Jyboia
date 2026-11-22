@@ -12,6 +12,8 @@ A acessibilidade fará parte da interface desde sua concepção: HTML semântico
 
 ## Estado atual
 
+Fase B modular (22/11/2026): `/` e `/scratch` abrem o editor existente; `/python` é uma página preparatória. O escopo Python inclui geração de código e execução local futura com Pyodide em Worker e terminal acessível, sem execução no backend. Catálogo, geração e runtime não estão implementados nesta fase.
+
 MVP público estático: editor Blockly e motor inteiramente no navegador, sem contas, API ou banco em execução. Os programas existem somente em memória e não são salvos; recarregar ou fechar perde o trabalho. O backend e os contratos anteriores permanecem no monorepo para evolução futura, fora do fluxo público. Consulte [MVP estático](docs/STATIC_MVP.md), [desenvolvimento](docs/DEVELOPMENT.md) e [validação assistiva pendente](docs/ACCESSIBILITY_VALIDATION.md).
 
 ```sh
@@ -36,9 +38,15 @@ Monorepo em TypeScript, com responsabilidades separadas:
 | `packages/block-engine` | Modelo, regras, serialização e interpretação, independentes de React, DOM, Blockly e banco |
 | `packages/shared`       | Tipos e contratos HTTP compartilhados, reutilizando o modelo do motor                      |
 
-Blockly continua candidato para a interface de blocos; sua adoção depende da avaliação descrita no roadmap. O formato interno do editor não será o contrato do motor nem o da API.
+Blockly é a base atual do editor Scratch; a validação manual de acessibilidade continua pendente. O formato interno da biblioteca não é o contrato do motor nem o da API. Python terá modelo e runtime independentes.
 
 ## Documentação
+
+- [Arquitetura dos módulos frontend](apps/web/docs/ARCHITECTURE.md)
+- [Python e palco terminal: plano técnico](apps/web/docs/PYTHON.md)
+- [Backend preservado](apps/api/docs/ARCHITECTURE.md)
+- [Infraestrutura futura](infra/aws/docs/ARCHITECTURE.md)
+- [Validação da modularização](apps/web/docs/VALIDATION.md)
 
 - [Visão e escopo do produto](docs/PRODUCT.md)
 - [Requisitos e critérios de aceitação](docs/REQUIREMENTS.md)

@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test';
 import { insertFromPalette } from './editor-helpers';
 
 for (const [module, method] of [
-  ['experiment/blockly-adapter.ts', 'prepareExecution'],
-  ['editor/announcements.ts', 'beginSequence'],
+  ['modules/scratch/experiment/blockly-adapter.ts', 'prepareExecution'],
+  ['shared/accessibility/announcements.ts', 'beginSequence'],
 ] as const) {
   test(`executa com instância anterior à atualização de ${method}`, async ({
     page,
@@ -11,13 +11,18 @@ for (const [module, method] of [
     // Fast Refresh can retain the mounted workspace and useState controller.
     // Serve the real module without the new method to reproduce that contract.
     let servedPreviousContract = false;
-    await page.route(`**/src/${module}`, async (route) => {
-      const response = await route.fetch();
-      const source = await response.text();
-      const previous = source.replace(`${method}()`, `previous${method}()`);
-      servedPreviousContract = previous !== source;
-      await route.fulfill({ response, body: previous });
-    });
+    // Vite can add cache-busting queries after a rebuild. Match the pathname,
+    // and retain evidence from any matching response rather than overwriting it.
+    await page.route(
+      (url) => url.pathname === `/src/${module}`,
+      async (route) => {
+        const response = await route.fetch();
+        const source = await response.text();
+        const previous = source.replace(`${method}()`, `previous${method}()`);
+        servedPreviousContract ||= previous !== source;
+        await route.fulfill({ response, body: previous });
+      },
+    );
     await page.goto('/');
     await insertFromPalette(page, 'Eventos');
     await insertFromPalette(page, 'Aparência');
@@ -35,8 +40,8 @@ for (const [module, method] of [
     await expect(page.getByRole('figure', { name: /^Bloco de/ })).toHaveCount(
       2,
     );
-    await expect(
-      page.getByTestId('editor-announcements'),
-    ).not.toContainText('Não foi possível iniciar');
+    await expect(page.getByTestId('editor-announcements')).not.toContainText(
+      'Não foi possível iniciar',
+    );
   });
 }

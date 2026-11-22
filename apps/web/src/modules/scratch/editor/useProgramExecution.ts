@@ -9,7 +9,7 @@ import type { mountEditor } from '../experiment/blockly-adapter';
 import { describeSequence } from '../experiment/descriptions';
 import type { ExecutionState } from './types';
 import { ProgramError } from '@jyboia/block-engine/experimental';
-import type { createAnnouncements } from './announcements';
+import type { createAnnouncements } from '../../../shared/accessibility/announcements';
 
 function errorMessage(code: string) {
   const messages: Record<string, string> = {

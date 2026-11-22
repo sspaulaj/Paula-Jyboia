@@ -2,6 +2,10 @@
 
 ## Visão
 
+Atualização de 22/11/2026: duas experiências pedagógicas independentes, Scratch e Python, cada uma com uma única interface para mouse, teclado e leitores de tela. A Fase B encapsula Scratch e prepara a rota Python. A expressão “um único editor” neste documento significa ausência de modo assistivo paralelo em cada experiência.
+
+Python atenderá alunos que já tiveram contato com blocos: construir, consultar código Python e executar no navegador em palco terminal com `print`, formulários de `input`, condicionais, repetições, erros e Iniciar/Parar. Pyodide em Worker é a primeira opção a validar. O runtime não existe nesta fase; não haverá execução Python no backend/AWS. Escopo e limites: [PYTHON](../apps/web/docs/PYTHON.md).
+
 Permitir que crianças aprendam pensamento computacional criando programas por blocos com autonomia, inclusive quando utilizam leitores de tela. O resultado visual e sua descrição acessível devem representar a mesma execução.
 
 ## Público e contexto
