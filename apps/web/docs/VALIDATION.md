@@ -43,6 +43,34 @@ Repetições automatizadas reduzem incerteza, não provam ausência universal de
 
 NVDA/Firefox, NVDA/Chrome e VoiceOver/Safari **não executados** nesta entrega. Permanecem pendentes: hover parado/reentrada, prioridade de sequência, foco antes de estados dos botões, interrupção, navegação de rotas e consulta pelo cursor virtual. Matriz canônica em [ACCESSIBILITY_VALIDATION](../../../docs/ACCESSIBILITY_VALIDATION.md).
 
-Python tem somente página preparatória. Sem evidências de execução Pyodide, input ou terminal até a prova técnica futura.
+Ao concluir a Fase B, Python tinha somente página preparatória. As evidências da execução implementada depois estão na seção Fase C abaixo.
 
 Os testes históricos de persistência no navegador continuam explicitamente suspensos, conforme o MVP; não foram contados como aprovados nem reativados para esta fase.
+
+## Fase C — execução Python em 22/11/2026
+
+Implementação e limites: [PYTHON_RUNTIME](PYTHON_RUNTIME.md). Testes usam Pyodide 314.0.8 real em Worker, Edge 158.0.4370.33, Node 24.22.2 e pnpm 12.16.1. Não usam execução Python simulada nos cenários de navegador.
+
+| Verificação | Resultado |
+| --- | --- |
+| `pnpm test` | 85 testes aprovados em 17 arquivos, incluindo sete novos testes de controlador/protocolo Python |
+| `pnpm lint` | Aprovado |
+| `pnpm typecheck` | Aprovado em todos os pacotes/aplicações |
+| `pnpm build:web` | Aprovado; cinco assets Pyodide emitidos localmente (~13,5 MB antes de compressão); aviso anterior de chunk Scratch acima de 500 kB permanece |
+| Build estático: `pnpm exec playwright test --config playwright.static.config.ts` | 21 aprovados: 18 cenários Python e três de rotas/MVP estático, sem retries |
+| `pnpm test:e2e` | 47 aprovados e duas falhas Scratch em 49 testes; os 18 cenários Python passaram também em desenvolvimento |
+
+Os dez cenários obrigatórios estão cobertos: print, input seguido de print, dois inputs, int, float, erro de sintaxe, erro de execução, Parar em laço infinito, Parar aguardando input e reinício. Também foram exercitados Unicode, resposta vazia, conversão inválida, condicionais/repetições, limite de saída, timeout de execução/entrada, cancelamento durante carregamento, falha de download, falta de isolamento e navegação por teclado/foco.
+
+### Falhas investigadas, sem mascarar com retries
+
+- A primeira rodada Python apresentou seis falhas de input em 13 testes. O TextDecoder do navegador rejeita views sobre SharedArrayBuffer; copiar os bytes após a sinalização atômica resolveu a causa. Os 13 testes passaram depois com Python real.
+- Ao ampliar a suíte, o teste de teclado tentava Tab antes de a rota lazy estar renderizada. Agora espera o seletor visível. A interceptação de download passou a usar o contexto do navegador para atingir requisições do Worker, em cenário independente para não reutilizar módulo em cache.
+- Uma rodada estática de 21 testes teve 19 sucessos e duas falhas: reinício ainda em carregamento após cinco segundos e falha de download ainda aguardando o watchdog. As asserções estavam desalinhadas com o prazo de inicialização de 30 segundos da aplicação. A suíte Python espera até 35 segundos nesses estados; Parar continua exigindo estado interrompido em até dois segundos. O download WASM abortado pode depender do watchdog de 30 segundos para encerrar; isso está coberto, não é recuperação imediata garantida pelo loader.
+- A rodada estática completa seguinte passou 21/21. Isso confirma os cenários nessa execução, não ausência universal de intermitência. Não foram habilitados retries.
+- Na regressão completa de desenvolvimento reapareceram duas falhas Scratch: `accessibility.spec.ts:27` esperava foco no campo (`role=button`) após ArrowRight, mas permaneceu no bloco operador (`role=figure`); `pointer-hover.spec.ts` esperava a descrição completa ao entrar no bloco, mas recebeu o anúncio anterior de conexão. O trace e o contexto de erro foram produzidos em `test-results`. O código Scratch, seu motor e versões de Blockly não mudaram; isso não comprova por si só a causa das falhas. Permanecem pendentes, sem reescrita ou alteração de comportamento fora do escopo Python.
+- Rechecagem direcionada desses dois cenários, com `--repeat-each=3` e saída em `test-results/phase-c-recheck`: seis aprovações sem alterações. Esse resultado caracteriza a reprodução como intermitente nesta sessão; não elimina as duas falhas da suíte completa nem comprova correção. A investigação posterior deve comparar foco/frames de renderização e avisos pendentes no trace antes de alterar Scratch.
+
+Scratch, `packages/block-engine` e backend permanecem sem alterações de código. Não houve persistência, novos endpoints, infraestrutura AWS, commit, push ou deploy. Testes PostgreSQL não foram repetidos nesta fase porque o backend não foi alterado.
+
+**Validação manual pendente:** NVDA/Firefox, NVDA/Chrome e VoiceOver/Safari. Confirmar pergunta pelo label/foco, dois inputs, consulta de código e saída, resultados falados, cancelamento/reinício e ausência de anúncios concorrentes dos botões. Testes automatizados de DOM/foco não comprovam a fala. Medir também inicialização e consumo de memória em equipamentos escolares. Esta entrega não declara conformidade assistiva homologada.

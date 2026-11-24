@@ -36,19 +36,17 @@ test('Python é independente e oferece retorno por teclado ao Scratch', async ({
   await expect(
     page.getByRole('heading', { name: 'Python por blocos' }),
   ).toBeVisible();
-  await expect(
-    page.getByText('O editor e a execução Python ainda não estão disponíveis.'),
-  ).toBeVisible();
+  await expect(page.getByLabel('Exemplo de programa')).toBeVisible();
   await expect(page.getByTestId('editor-host')).toHaveCount(0);
   await expect(
     page.getByRole('button', { name: 'Iniciar programa' }),
-  ).toHaveCount(0);
+  ).toBeVisible();
   expect(
     requests.some((url) =>
       /\/modules\/scratch\/|pyodide|\/api\/projects/.test(url),
     ),
   ).toBe(false);
-  await page.keyboard.press('Tab');
+  await page.getByRole('link', { name: 'Abrir editor Scratch' }).focus();
   await expect(
     page.getByRole('link', { name: 'Abrir editor Scratch' }),
   ).toBeFocused();

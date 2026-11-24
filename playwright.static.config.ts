@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './apps/web/e2e',
-  testMatch: 'static-mvp.spec.ts',
+  testMatch: ['static-mvp.spec.ts', 'python-runtime.spec.ts'],
   outputDir: './test-results/static',
   workers: 1,
   use: {
