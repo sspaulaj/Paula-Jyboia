@@ -2,5 +2,65 @@
   "buildCommand": "pnpm build:web",
   "outputDirectory": "apps/web/dist",
   "installCommand": "pnpm install",
-  "framework": null
+  "framework": null,
+  "headers": [
+    {
+      "source": "/python",
+      "headers": [
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Cross-Origin-Embedder-Policy",
+          "value": "require-corp"
+        }
+      ]
+    },
+    {
+      "source": "/python/",
+      "headers": [
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Cross-Origin-Embedder-Policy",
+          "value": "require-corp"
+        }
+      ]
+    },
+    {
+      "source": "/assets/python-worker-:path*",
+      "headers": [
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Cross-Origin-Embedder-Policy",
+          "value": "require-corp"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src \u0027none\u0027; script-src \u0027self\u0027 \u0027wasm-unsafe-eval\u0027; connect-src \u0027self\u0027"
+        }
+      ]
+    },
+    {
+      "source": "/python-runtime/:path*",
+      "headers": [
+        {
+          "key": "Cross-Origin-Resource-Policy",
+          "value": "same-origin"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }

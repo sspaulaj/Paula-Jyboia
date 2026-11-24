@@ -8,7 +8,7 @@
 | `/experiments/editor` | PoC somente em desenvolvimento. |
 | Demais caminhos | Fallback Scratch preservado nesta etapa. |
 
-Rotas são do frontend, não endpoints REST. O servidor estático precisa encaminhar caminhos de aplicação a `index.html`; `apps/web/vercel.json` contém o rewrite. Testar acesso direto e recarga no build de produção, não somente no Vite dev.
+Rotas são do frontend, não endpoints REST. O servidor estático precisa encaminhar caminhos de aplicação a `index.html`. Tanto `vercel.json` na raiz (build a partir do monorepo) quanto `apps/web/vercel.json` (Root Directory `apps/web`) precisam manter o mesmo rewrite e os mesmos cabeçalhos Python; a Vercel usa a configuração da raiz selecionada, não combina os dois arquivos. Os comandos de build e diretório de saída são específicos de cada configuração. Testar acesso direto e recarga na hospedagem, não somente no Vite dev.
 
 A faixa superior comum contém a marca Jyboia e links Scratch/Python, com `aria-current="page"` no módulo atual. Os controles específicos continuam dentro de cada módulo. Entrar, cadastrar e tela inicial ficam para etapas futuras.
 
