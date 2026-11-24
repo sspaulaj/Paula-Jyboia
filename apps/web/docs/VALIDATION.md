@@ -1,5 +1,11 @@
 # Validação da modularização — 22/11/2026
 
+## Faixa compartilhada de navegação — 24/11/2026
+
+Marca transferida para `src/app/SiteHeader.tsx`, comum a Scratch e Python, com links nativos e página atual indicada por `aria-current`. Navegação de documento preserva COOP/COEP do Python e o descarte de memória já existente. Controles e execução permanecem nos módulos; sem autenticação ou tela inicial antecipadas.
+
+ESLint, TypeScript e build de produção aprovados. Dez testes de navegador direcionados aprovados: três da faixa (troca por teclado e dimensões 360/1440), dois de rotas/execução, quatro de categorias e um do fluxo Python por teclado/input. Capturas inspecionadas para a faixa em 360 e 1440 pixels. A verificação responsiva nova cobre a faixa; não representa homologação de todo o editor em celular. Sem repetição da suíte completa ou de testes unitários para esta mudança de composição visual. Falhas intermitentes históricas abaixo permanecem abertas. Leitura real da navegação com NVDA/VoiceOver ainda exige validação manual. Nenhum push ou deploy nesta alteração.
+
 ## Baseline antes de mover arquivos
 
 Na Fase A: 76 testes Vitest passaram; navegador completo apresentou 26 sucessos e 3 falhas, seguidas de sucesso isolado. Falhas: hover em `accessibility.spec.ts`, hover da PoC em `editor.spec.ts` e precondição de interceptação `prepareExecution` em `execution-refresh.spec.ts`.

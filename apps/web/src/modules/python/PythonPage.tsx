@@ -180,7 +180,6 @@ export function PythonPage() {
       >
         {announcement}
       </p>
-      <a href="/scratch">Abrir editor Scratch</a>
     </main>
   );
 }

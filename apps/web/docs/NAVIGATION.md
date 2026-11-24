@@ -10,4 +10,6 @@
 
 Rotas são do frontend, não endpoints REST. O servidor estático precisa encaminhar caminhos de aplicação a `index.html`; `apps/web/vercel.json` contém o rewrite. Testar acesso direto e recarga no build de produção, não somente no Vite dev.
 
-O link da página Python para Scratch é navegação de documento. O ciclo de memória é o mesmo do MVP: recarregar/navegar para outra página descarta o programa. Não há armazenamento, seletor adicional no Scratch ou promessa de recuperação. Quando houver navegação SPA, projetar snapshots em memória, cancelamento de execução, restauração de foco e desmontagem de listeners antes de montar outro workspace.
+A faixa superior comum contém a marca Jyboia e links Scratch/Python, com `aria-current="page"` no módulo atual. Os controles específicos continuam dentro de cada módulo. Entrar, cadastrar e tela inicial ficam para etapas futuras.
+
+Os links usam navegação de documento, preservando também os cabeçalhos de isolamento exigidos pelo Python. O ciclo de memória é o mesmo do MVP: recarregar/navegar para outra página descarta o programa. Não há armazenamento nem promessa de recuperação. Quando houver navegação SPA, projetar snapshots em memória, cancelamento de execução, restauração de foco e desmontagem de listeners antes de montar outro workspace.

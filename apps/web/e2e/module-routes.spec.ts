@@ -46,9 +46,9 @@ test('Python é independente e oferece retorno por teclado ao Scratch', async ({
       /\/modules\/scratch\/|pyodide|\/api\/projects/.test(url),
     ),
   ).toBe(false);
-  await page.getByRole('link', { name: 'Abrir editor Scratch' }).focus();
+  await page.getByRole('link', { name: 'Scratch', exact: true }).focus();
   await expect(
-    page.getByRole('link', { name: 'Abrir editor Scratch' }),
+    page.getByRole('link', { name: 'Scratch', exact: true }),
   ).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/scratch$/);

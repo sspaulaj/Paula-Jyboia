@@ -162,6 +162,7 @@ test('teclado alcança exemplo, início, terminal e campo de resposta', async ({
   page,
 }) => {
   await expect(page.getByLabel('Exemplo de programa')).toBeVisible();
+  await page.getByRole('link', { name: 'Python', exact: true }).focus();
   await page.keyboard.press('Tab');
   await expect(page.getByLabel('Exemplo de programa')).toBeFocused();
   await page.getByLabel('Exemplo de programa').selectOption('name');

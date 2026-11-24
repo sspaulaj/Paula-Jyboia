@@ -1,4 +1,3 @@
-import jyboiaMascote from '../../../../assets/jyboia-mascote.svg';
 interface TopBarProps {
   isDisconnectEnabled: boolean;
   onEnterEditor: () => void;
@@ -13,19 +12,7 @@ export function TopBar({
   onDisconnect,
 }: TopBarProps) {
   return (
-    <header className="top-bar" role="banner">
-      <div className="top-bar__brand">
-        <img
-          src={jyboiaMascote}
-          alt=""
-          aria-hidden="true"
-          className="top-bar__logo"
-          width={36}
-          height={36}
-        />
-        <span className="top-bar__name">Jyboia</span>
-      </div>
-
+    <div className="top-bar">
       <nav className="top-bar__actions" aria-label="Controles do editor">
         <button
           type="button"
@@ -51,6 +38,6 @@ export function TopBar({
           Desconectar bloco
         </button>
       </nav>
-    </header>
+    </div>
   );
 }
