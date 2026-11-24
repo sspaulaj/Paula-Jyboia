@@ -1,6 +1,6 @@
 # Python por blocos e palco terminal
 
-**Estado em 22/11/2026:** arquitetura aprovada; Fase B prepara somente módulo e rota. Não há catálogo Python, gerador, Pyodide ou execução implementados. A decisão atual substitui a proposta anterior de apenas geração.
+**Estado em 22/11/2026:** Fase C implementa a prova de execução de exemplos predefinidos com Pyodide em Worker, print, input e cancelamento em `/python`. Catálogo de blocos e gerador continuam futuros. Consulte [mecanismo, limites e validação](PYTHON_RUNTIME.md). As seções seguintes descrevem a arquitetura alvo; propostas como SIGINT cooperativo não devem ser confundidas com o cancelamento definitivo da PoC.
 
 ## Responsabilidades futuras
 
@@ -56,4 +56,4 @@ Definir e medir limites de blocos/profundidade, tempo ativo, tamanho de entrada 
 - [Pyodide: interrupção](https://pyodide.org/en/stable/usage/keyboard-interrupts.html): buffer compartilhado e sinais.
 - [MDN: SharedArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer): restrições de isolamento/contexto seguro.
 
-Essas fontes fundamentam a proposta; não substituem prova local de compatibilidade. Nenhuma versão Pyodide foi instalada ou homologada nesta fase.
+Essas fontes fundamentam a proposta; não substituem prova local de compatibilidade. A PoC usa Pyodide 314.0.8, com validação automatizada e limites registrados em [PYTHON_RUNTIME](PYTHON_RUNTIME.md); validação com leitores reais permanece pendente.

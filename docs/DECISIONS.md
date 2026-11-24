@@ -1,5 +1,13 @@
 # Decisões arquiteturais
 
+## D-2026-11-22-PY-RUNTIME — Prova interativa no navegador
+
+**Status:** implementada na Fase C. **Contexto:** validar input e cancelamento antes de construir editor/gerador. **Decisão:** Pyodide 314.0.8 em Worker de módulo, arquivos locais fixados e exemplos revisados selecionados por ID. Stdin usa SharedArrayBuffer/Atomics; somente o Worker espera. Cada execução recebe Worker novo; Parar termina o Worker e invalida mensagens antigas. UI mantém código e terminal acessíveis, sem voz própria.
+
+**Alternativas:** Promise no callback síncrono stdin não resolve input; reexecutar com respostas acumuladas duplica efeitos; thread principal bloqueia a interface; execução remota contraria o MVP. SIGINT cooperativo permanece evolução possível, sem substituir o cancelamento definitivo desta PoC.
+
+**Consequências:** requer HTTPS/localhost e COOP/COEP na rota Python/Worker, sem alterar Scratch. CSP restringe recursos à origem; há limites de tempo/entrada/saída, mas Worker não é sandbox perfeita nem há limite rígido de memória. Sem código arbitrário ou pacotes dos alunos. **Evidências e limites:** [PYTHON_RUNTIME](../apps/web/docs/PYTHON_RUNTIME.md) e [VALIDATION](../apps/web/docs/VALIDATION.md). Não houve deploy ou execução AWS.
+
 ## D-2026-11-22 — Módulos pedagógicos independentes
 
 **Status:** adotada na Fase B. **Contexto:** expandir Jyboia sem reescrever Scratch ou prejudicar acessibilidade. **Alternativas:** editor genérico com condicionais de linguagem, reescrita do Scratch ou módulos separados. **Decisão:** encapsular `editor` e `experiment` juntos em `modules/scratch`, manter motor/documentos existentes, preparar `modules/python`, compor rotas em `app` e compartilhar inicialmente somente coordenação de anúncios. `/` continua Scratch; `/scratch` é explícita; `/python` é preparatória.

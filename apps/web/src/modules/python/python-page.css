@@ -12,7 +12,53 @@
   text-underline-offset: 0.2em;
 }
 
-.python-page a:focus-visible {
+.python-page :focus-visible,
+.python-page .python-focus-target:focus {
   outline: 3px solid #20552d;
   outline-offset: 4px;
+}
+
+.python-page label {
+  display: block;
+  font-weight: 600;
+  margin-top: 1rem;
+}
+.python-page select,
+.python-page input,
+.python-page button {
+  font: inherit;
+  padding: 0.6rem;
+  max-width: 100%;
+}
+.python-page button {
+  margin: 0.5rem 0.5rem 0.5rem 0;
+}
+.python-page button[aria-disabled='true'] {
+  opacity: 0.6;
+}
+.python-page pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 1rem;
+  border: 1px solid #687a6c;
+}
+.python-page .python-output {
+  min-height: 5rem;
+  max-height: 24rem;
+  overflow: auto;
+  background: #f2f6f2;
+}
+.python-page .python-controls {
+  margin-top: 1rem;
+}
+.python-page .python-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }

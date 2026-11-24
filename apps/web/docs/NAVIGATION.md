@@ -4,7 +4,7 @@
 | --- | --- |
 | `/` | Scratch, preservando a entrada pública anterior. |
 | `/scratch` | Mesmo módulo Scratch. |
-| `/python` | Página preparatória acessível; não contém editor, gerador ou runtime simulados. |
+| `/python` | PoC de execução Python com exemplos predefinidos, Worker real e terminal; ainda sem editor de blocos ou gerador. |
 | `/experiments/editor` | PoC somente em desenvolvimento. |
 | Demais caminhos | Fallback Scratch preservado nesta etapa. |
 

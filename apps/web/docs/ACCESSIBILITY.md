@@ -6,7 +6,9 @@ Cada módulo oferece um único editor. Compartilhar mecanismos não significa co
 
 O coordenador compartilhado mantém prioridade da sequência sobre edição, cancela pendências e não confirma término de fala. Sua extração não autoriza alterar os estados de Iniciar/Parar ou reapresentar mensagens ocultas visualmente.
 
-## Terminal Python futuro
+## Terminal Python
+
+A Fase C implementa a prova com exemplos predefinidos, stdin real e cancelamento. Mecanismo e roteiro em [PYTHON_RUNTIME](PYTHON_RUNTIME.md). A validação de fala com leitores reais permanece pendente.
 
 - Código gerado consultável e copiável por controles nativos, com rótulo e foco visível; não ler o código inteiro a cada alteração.
 - Saída como histórico textual limitado e consultável. Agrupar anúncios novos, sem reler histórico inteiro ou inundar a região viva em laços.
@@ -15,4 +17,4 @@ O coordenador compartilhado mantém prioridade da sequência sobre edição, can
 - Separar descrição inicial do programa, solicitações de entrada, resultados e erros. Erro precisa de mensagem em português e associação ao bloco/linha quando disponível.
 - Parar deve funcionar durante carregamento, laço e espera de entrada, invalidando o formulário e respostas tardias.
 
-Validar futuramente NVDA/Firefox, NVDA/Chrome e VoiceOver/Safari: início, leitura, dois inputs consecutivos, entrada vazia, erro de conversão, laço com muita saída, interrupção e reinício. Automação DOM não equivale à fala observada. A Fase B não valida um terminal ainda inexistente.
+Validar NVDA/Firefox, NVDA/Chrome e VoiceOver/Safari: início, leitura, dois inputs consecutivos, entrada vazia, erro de conversão, laço com muita saída, interrupção e reinício. Automação DOM não equivale à fala observada. O código apresentado nesta PoC é de exemplos predefinidos, não de um gerador de blocos.

@@ -12,7 +12,7 @@ A acessibilidade fará parte da interface desde sua concepção: HTML semântico
 
 ## Estado atual
 
-Fase B modular (22/11/2026): `/` e `/scratch` abrem o editor existente; `/python` é uma página preparatória. O escopo Python inclui geração de código e execução local futura com Pyodide em Worker e terminal acessível, sem execução no backend. Catálogo, geração e runtime não estão implementados nesta fase.
+Fase C (22/11/2026): `/` e `/scratch` abrem o editor existente; `/python` oferece uma prova de execução de exemplos predefinidos com Pyodide em Worker, terminal, `print`, `input` e Parar. Catálogo de blocos e geração Python ainda são futuros. Consulte [como testar e limitações](apps/web/docs/PYTHON_RUNTIME.md). Não há execução Python no backend.
 
 MVP público estático: editor Blockly e motor inteiramente no navegador, sem contas, API ou banco em execução. Os programas existem somente em memória e não são salvos; recarregar ou fechar perde o trabalho. O backend e os contratos anteriores permanecem no monorepo para evolução futura, fora do fluxo público. Consulte [MVP estático](docs/STATIC_MVP.md), [desenvolvimento](docs/DEVELOPMENT.md) e [validação assistiva pendente](docs/ACCESSIBILITY_VALIDATION.md).
 

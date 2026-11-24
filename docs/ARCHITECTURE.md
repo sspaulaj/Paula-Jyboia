@@ -4,7 +4,7 @@
 
 `apps/web/src/app` resolve rotas; `modules/scratch` encapsula editor e adaptador atuais; `modules/python` prepara a nova experiência; `shared/accessibility` contém coordenação de anúncios sem regras de linguagem. `/` preserva Scratch e `/scratch` é entrada explícita. `/python` ainda não contém editor nem runtime. Detalhes canônicos: [frontend](../apps/web/docs/ARCHITECTURE.md), [backend](../apps/api/docs/ARCHITECTURE.md), [infraestrutura](../infra/aws/docs/ARCHITECTURE.md).
 
-A arquitetura alvo Python inclui geração **e execução no navegador** com terminal acessível, print/input e interrupção. Pyodide em Worker é a primeira opção, sujeito a prova técnica; motor Scratch e runtime Python não dependem um do outro. Nenhuma execução Python ocorrerá no backend/AWS no MVP. Modelo e estratégia de entrada/cancelamento: [PYTHON](../apps/web/docs/PYTHON.md).
+A arquitetura alvo Python inclui geração **e execução no navegador** com terminal acessível, print/input e interrupção. A Fase C implementa a prova técnica de Pyodide em Worker com exemplos predefinidos; catálogo e geração continuam futuros. Motor Scratch e runtime Python não dependem um do outro. Nenhuma execução Python ocorrerá no backend/AWS no MVP. Modelo e planejamento: [PYTHON](../apps/web/docs/PYTHON.md). Implementação e limites da PoC: [PYTHON_RUNTIME](../apps/web/docs/PYTHON_RUNTIME.md).
 
 Diagramas vigentes: [geral](diagrams/modules.md), [compartilhados](diagrams/frontend-shared.md), [dependências](diagrams/module-dependencies.md), [plataforma](diagrams/platform-boundaries.md), [geração e execução Python futura](diagrams/python-pipeline.md). As seções de motor/documento abaixo descrevem Scratch, não um modelo universal para linguagens.
 
