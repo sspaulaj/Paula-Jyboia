@@ -36,9 +36,6 @@ async function insertBlock(page: Page, category: string) {
       exact: true,
     })
     .click();
-  await page
-    .getByRole('button', { name: 'Escolher tipos de blocos' })
-    .press('Enter');
   await page.keyboard.press('Enter');
   await page.keyboard.press('Enter');
 }
@@ -90,6 +87,7 @@ test('parar cancela comandos pendentes e programa vazio informa o erro', async (
   page,
 }) => {
   await page.goto('/');
+  await page.clock.install();
   const start = page.getByRole('button', {
     name: 'Iniciar programa',
     exact: true,
@@ -100,8 +98,7 @@ test('parar cancela comandos pendentes e programa vazio informa o erro', async (
   ).toContainText('Não foi possível iniciar.');
   await insertBlock(page, 'Eventos');
   await insertBlock(page, 'Movimento');
-  await page.clock.install();
-  await page.clock.pauseAt(new Date());
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
   await start.click();
   await page
     .getByRole('button', { name: 'Parar programa', exact: true })

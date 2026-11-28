@@ -14,7 +14,13 @@ import { BLOCKS_BY_CATEGORY } from '../categories';
 import type { BlockCategory } from '../types';
 
 const labels: Record<PrototypeBlock['kind'], string> = {
+  changeX: 'Alterar X',
+  changeY: 'Alterar Y',
+  direction: 'Apontar direção',
+  sayFor: 'Dizer por N segundos',
+  ifElse: 'Se condição, então, senão',
   start: 'Quando iniciar',
+  actorClick: 'Quando o personagem for clicado',
   move: 'Mover N passos',
   turn: 'Girar N graus',
   goto: 'Ir para X, Y',
@@ -32,6 +38,7 @@ const labels: Record<PrototypeBlock['kind'], string> = {
   change: 'Alterar variável',
 };
 const slots: Record<ConnectionSlot, string> = {
+  elseBody: 'Dentro do senão',
   next: 'Depois',
   body: 'Dentro',
   condition: 'Na condição',
@@ -56,7 +63,7 @@ export function BlockActions({
     snapshot.program.blocks.find((block) => block.id === snapshot.selectedId);
   const destinations = source
     ? snapshot.program.blocks.flatMap((block, index) =>
-        (['next', 'body', 'condition'] as const)
+        (['next', 'body', 'elseBody', 'condition'] as const)
           .filter((slot) =>
             canConnect(snapshot.program, source.id, block.id, slot),
           )

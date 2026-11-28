@@ -2,6 +2,7 @@ import * as Blockly from 'blockly/core';
 import * as portuguese from 'blockly/msg/pt-br';
 import {
   inspectProgram,
+  isEvent,
   canConnect,
   validOperand,
   type ConnectionSlot,
@@ -9,7 +10,9 @@ import {
   type PrototypeProgram,
 } from '@jyboia/block-engine/experimental';
 import { describeBlock, describeConnection } from './descriptions';
+import { describeField, fieldInstructions } from './field-descriptions';
 import { accessibilityMessages } from './locale';
+import { createDragPreviewer } from './drag-feedback';
 import { extendedDefinitions } from './extended-blocks';
 import {
   inactiveStarts,
@@ -23,6 +26,34 @@ import type { EditorDocument } from '@jyboia/block-engine/editor-document';
 export function readBlock(block: Blockly.Block): PrototypeBlock {
   const base = { id: block.id, next: block.getNextBlock()?.id ?? null };
   switch (block.type) {
+    case 'jyboia_changeX':
+    case 'jyboia_changeY':
+      return {
+        ...base,
+        kind: block.type === 'jyboia_changeX' ? 'changeX' : 'changeY',
+        amount: Number(block.getFieldValue('AMOUNT')),
+      };
+    case 'jyboia_direction':
+      return {
+        ...base,
+        kind: 'direction',
+        degrees: Number(block.getFieldValue('DIRECTION')),
+      };
+    case 'jyboia_sayFor':
+      return {
+        ...base,
+        kind: 'sayFor',
+        text: String(block.getFieldValue('TEXT')),
+        seconds: Number(block.getFieldValue('SECONDS')),
+      };
+    case 'jyboia_ifElse':
+      return {
+        ...base,
+        kind: 'ifElse',
+        condition: block.getInputTargetBlock('CONDITION')?.id ?? null,
+        body: block.getInputTargetBlock('BODY')?.id ?? null,
+        elseBody: block.getInputTargetBlock('ELSE')?.id ?? null,
+      };
     case 'jyboia_goto':
       return {
         ...base,
@@ -79,6 +110,8 @@ export function readBlock(block: Blockly.Block): PrototypeBlock {
       };
     case 'jyboia_start':
       return { ...base, kind: 'start' };
+    case 'jyboia_actorClick':
+      return { ...base, kind: 'actorClick' };
     case 'jyboia_move':
       return {
         ...base,
@@ -117,7 +150,8 @@ export function readProgram(
             .getAllBlocks(false)
             .filter(
               (block) =>
-                block.type === 'jyboia_start' &&
+                (block.type === 'jyboia_start' ||
+                  block.type === 'jyboia_actorClick') &&
                 !block.isInsertionMarker() &&
                 !inactiveStarts.get(workspace)!.has(block.id),
             )
@@ -139,6 +173,14 @@ export function registerBlocks() {
   }
   Blockly.setLocale({ ...messages, ...accessibilityMessages });
   const definitions = [
+    {
+      type: 'jyboia_actorClick',
+      message0: 'quando o personagem for clicado',
+      args0: [],
+      colour: '#9b6500',
+      nextStatement: 'Command',
+      hat: 'cap',
+    },
     {
       type: 'jyboia_start',
       message0: 'quando iniciar',
@@ -197,10 +239,18 @@ export function registerBlocks() {
         this.setAriaRoleDescriptionProvider('bloco de programação');
         this.setTooltip(() => describeBlock(readBlock(this)));
         this.getInput('BODY')?.setAriaLabelProvider(() => 'Comandos internos');
+        this.getInput('ELSE')?.setAriaLabelProvider(
+          () => 'Comandos do senão, quando a condição for falsa',
+        );
         this.getInput('CONDITION')?.setAriaLabelProvider(
           () => 'Condição: encaixe um operador booleano',
         );
         for (const [field, label] of Object.entries({
+          STEPS: 'passos, número inteiro entre -480 e 480',
+          DEGREES: 'graus para a direita, número inteiro entre 0 e 360',
+          TEXT: 'mensagem, até 120 caracteres',
+          AMOUNT: 'alteração de posição, de -480 a 480',
+          DIRECTION: 'direção em graus, zero aponta para a direita',
           X: 'posição horizontal, de -240 a 240',
           Y: 'posição vertical, de -180 a 180',
           SECONDS: 'segundos, de 0 a 30',
@@ -210,7 +260,9 @@ export function registerBlocks() {
           LEFT: 'primeiro valor: número ou nome de variável',
           RIGHT: 'segundo valor: número ou nome de variável',
         }))
-          this.getField(field)?.setAriaTypeName(label);
+          this.getField(field)?.setAriaTypeName(
+            `${fieldInstructions[field]}. ${label}`,
+          );
         this.getField('NAME')?.setValidator((value: string) =>
           /^[\p{L}_][\p{L}\p{N}_ ]{0,31}$/u.test(value.trim())
             ? value.trim()
@@ -220,13 +272,6 @@ export function registerBlocks() {
           this.getField(field)?.setValidator((value: string) =>
             validOperand(value.trim()) ? value.trim() : null,
           );
-        this.getField('STEPS')?.setAriaTypeName(
-          'passos, número inteiro entre -480 e 480',
-        );
-        this.getField('DEGREES')?.setAriaTypeName(
-          'graus para a direita, número inteiro entre 0 e 360',
-        );
-        this.getField('TEXT')?.setAriaTypeName('mensagem, até 120 caracteres');
         this.getField('TEXT')?.setValidator((value: string) =>
           value.replaceAll('\0', '').slice(0, 120),
         );
@@ -272,6 +317,15 @@ export function mountEditor(
 ) {
   registerBlocks();
   const workspace = Blockly.inject(container, {
+    plugins: {
+      connectionPreviewer: createDragPreviewer(container, announce, (id) => {
+        const anchor = dragAnchorId;
+        cancelAnimationFrame(autoDropFrame);
+        autoDropFrame = requestAnimationFrame(() =>
+          autoConnectDrop(id, anchor),
+        );
+      }),
+    },
     toolbox,
     renderer: 'zelos',
     sounds: false,
@@ -292,9 +346,75 @@ export function mountEditor(
   document
     .getElementById('blocklyAriaAnnounce')
     ?.setAttribute('aria-live', 'off');
+  // The listbox canvas covers its items; name the full flyout surface too,
+  // including the background below the last block and around the scrollbar.
+  const paletteSurface = workspace.getFlyout()?.getWorkspace().getParentSvg();
+  paletteSurface?.setAttribute('role', 'region');
+  paletteSurface?.setAttribute('aria-label', 'Lista de blocos');
   let disposed = false;
   let frame = 0;
   let selectedId: string | null = null;
+  let dragAnchorId: string | null = null;
+  let autoDropFrame = 0;
+  const captureDropAnchor = () => {
+    dragAnchorId = selectedId;
+  };
+  container.addEventListener('pointerdown', captureDropAnchor, true);
+  function autoConnectDrop(id: string, anchorId: string | null) {
+    if (disposed || loading) return;
+    const block = workspace.getBlockById(id);
+    // Native/explicit connections win. Event hats always start new sequences.
+    if (!block || block.getParent() || isEvent(readBlock(block))) return;
+    const descendants = new Set(
+      block.getDescendants(false).map((child) => child.id),
+    );
+    let target = anchorId ? workspace.getBlockById(anchorId) : null;
+    if (!target || descendants.has(target.id)) {
+      target =
+        workspace
+          .getTopBlocks(false)
+          .filter(
+            (item) => isEvent(readBlock(item)) && !descendants.has(item.id),
+          )
+          .at(-1) ?? null;
+      if (target) while (target.getNextBlock()) target = target.getNextBlock()!;
+    }
+    if (!target) return;
+    let slot: ConnectionSlot = block.outputConnection
+      ? 'condition'
+      : target.getInput('BODY')
+        ? 'body'
+        : 'next';
+    let destination =
+      slot === 'condition'
+        ? target.getInput('CONDITION')?.connection
+        : slot === 'body'
+          ? target.getInput('BODY')?.connection
+          : target.nextConnection;
+    // Append inside the chosen body/sequence, preserving every existing block.
+    if (slot !== 'condition' && destination?.targetBlock()) {
+      target = destination.targetBlock() as Blockly.BlockSvg;
+      while (target.getNextBlock()) target = target.getNextBlock()!;
+      slot = 'next';
+      destination = target.nextConnection;
+    }
+    const source =
+      slot === 'condition' ? block.outputConnection : block.previousConnection;
+    if (
+      !source ||
+      !destination ||
+      !canConnect(readProgram(workspace, false), id, target.id, slot)
+    )
+      return;
+    Blockly.Events.setGroup(true);
+    try {
+      destination.connect(source);
+    } finally {
+      Blockly.Events.setGroup(false);
+    }
+    selectedId = id;
+    synchronize();
+  }
   let initialState = { x: 0, y: 0, heading: 0 };
   let loading = false;
   const exportDocument = (): EditorDocument => {
@@ -416,7 +536,11 @@ export function mountEditor(
   };
   workspace.addChangeListener(onChange);
   // Resolve the innermost block, including fields and connected SVG children.
-  const blockUnderPointer = (target: EventTarget | null) => {
+  const blockUnderPointer = (
+    target: EventTarget | null,
+    x: number,
+    y: number,
+  ) => {
     if (!(target instanceof Element)) return null;
     const blocks = [
       ...workspace.getAllBlocks(false),
@@ -432,10 +556,24 @@ export function mountEditor(
       );
       if (block) return block;
     }
+    // Flyout hit rectangles can be siblings of the SVG block, not its children.
+    if (target.closest('.blocklyFlyout')) {
+      return (
+        blocks.find((block) => {
+          if (!block.isInFlyout) return false;
+          const box = block.getSvgRoot().getBoundingClientRect();
+          return (
+            x >= box.left && x <= box.right && y >= box.top && y <= box.bottom
+          );
+        }) ?? null
+      );
+    }
     return null;
   };
   let pointerTimer: ReturnType<typeof setTimeout> | undefined;
   let pointerBlock: Blockly.BlockSvg | null = null;
+  let pointerField: Blockly.Field | null = null;
+  let pointerListBackground = false;
   let pointerPosition: { x: number; y: number } | null = null;
   const clearPointer = () => {
     if (pointerTimer !== undefined) clearTimeout(pointerTimer);
@@ -449,33 +587,81 @@ export function mountEditor(
     )
       return;
     pointerPosition = { x: event.clientX, y: event.clientY };
-    const block = event.buttons ? null : blockUnderPointer(target);
-    if (block === pointerBlock) return;
+    const block = event.buttons
+      ? null
+      : blockUnderPointer(target, event.clientX, event.clientY);
+    // Coordinates also cover flyout hit rectangles layered over field SVGs.
+    // Never treat static labels as editable values.
+    const field =
+      block?.inputList
+        .flatMap((input) => input.fieldRow)
+        .find((candidate) => {
+          if (!candidate.name || !fieldInstructions[candidate.name])
+            return false;
+          const root = candidate.getSvgRoot();
+          if (!root) return false;
+          const box = root.getBoundingClientRect();
+          return (
+            box.width > 0 &&
+            box.height > 0 &&
+            event.clientX >= box.left &&
+            event.clientX <= box.right &&
+            event.clientY >= box.top &&
+            event.clientY <= box.bottom
+          );
+        }) ?? null;
+    const listBackground =
+      !event.buttons &&
+      !block &&
+      target instanceof Element &&
+      paletteSurface?.contains(target) === true;
+    if (
+      block === pointerBlock &&
+      field === pointerField &&
+      listBackground === pointerListBackground
+    )
+      return;
     clearPointer();
     pointerBlock?.getSvgRoot()?.classList.remove('jyboia-pointer-block');
     pointerBlock = block;
-    if (!block) return;
-    block.getSvgRoot().classList.add('jyboia-pointer-block');
+    pointerField = field;
+    pointerListBackground = listBackground;
+    if (!block && !listBackground) return;
+    block?.getSvgRoot().classList.add('jyboia-pointer-block');
     pointerTimer = setTimeout(() => {
       pointerTimer = undefined;
+      if (!disposed && !block && pointerListBackground) {
+        announce('Lista de blocos.', true);
+        return;
+      }
       if (
         !disposed &&
+        block &&
         pointerBlock === block &&
         block.workspace.getBlockById(block.id)
       )
         announce(
-          block.getAriaLabel(Blockly.utils.aria.Verbosity.STANDARD),
+          field?.name
+            ? describeField(field.name, field.getText())
+            : block.getAriaLabel(Blockly.utils.aria.Verbosity.STANDARD),
           true,
         );
     }, 180);
   };
   const onPointerOver = (event: PointerEvent) =>
     updatePointer(event, event.target);
-  const onPointerOut = (event: PointerEvent) =>
-    updatePointer(event, event.relatedTarget);
-  container.addEventListener('pointerover', onPointerOver);
-  container.addEventListener('pointermove', onPointerOver);
-  container.addEventListener('pointerout', onPointerOut);
+  const onPointerOut = (event: PointerEvent) => {
+    // Internal out/over pairs share coordinates. Do not consume the new
+    // position on out, or the following over event would be ignored.
+    if (
+      !(event.relatedTarget instanceof Node) ||
+      !container.contains(event.relatedTarget)
+    )
+      updatePointer(event, null);
+  };
+  container.addEventListener('pointerover', onPointerOver, true);
+  container.addEventListener('pointermove', onPointerOver, true);
+  container.addEventListener('pointerout', onPointerOut, true);
   // Reparenting SVG during a keyboard drop can clear native browser focus.
   // Restore only that keyboard target, never after a pointer action or Tab.
   const preserveDropFocus = (event: KeyboardEvent) => {
@@ -547,7 +733,7 @@ export function mountEditor(
             document.program.blocks
               .filter(
                 (block) =>
-                  block.kind === 'start' &&
+                  isEvent(block) &&
                   !document.program.entryBlockIds.includes(block.id),
               )
               .map((block) => block.id),
@@ -619,7 +805,13 @@ export function mountEditor(
       const destination =
         slot === 'next'
           ? target.nextConnection
-          : target.getInput(slot === 'body' ? 'BODY' : 'CONDITION')?.connection;
+          : target.getInput(
+              slot === 'body'
+                ? 'BODY'
+                : slot === 'elseBody'
+                  ? 'ELSE'
+                  : 'CONDITION',
+            )?.connection;
       const source =
         slot === 'condition'
           ? block.outputConnection
@@ -703,6 +895,8 @@ export function mountEditor(
       Blockly.getFocusManager().focusNode(block);
     },
     dispose() {
+      cancelAnimationFrame(autoDropFrame);
+      container.removeEventListener('pointerdown', captureDropAnchor, true);
       clearPointer();
       Blockly.Tooltip.hide();
       disposed = true;
@@ -711,9 +905,9 @@ export function mountEditor(
       pendingMoveAnnouncement = null;
       observer.disconnect();
       cancelAnimationFrame(focusFrame);
-      container.removeEventListener('pointerover', onPointerOver);
-      container.removeEventListener('pointermove', onPointerOver);
-      container.removeEventListener('pointerout', onPointerOut);
+      container.removeEventListener('pointerover', onPointerOver, true);
+      container.removeEventListener('pointermove', onPointerOver, true);
+      container.removeEventListener('pointerout', onPointerOut, true);
       container.removeEventListener('keydown', preserveDropFocus, true);
       workspace.removeChangeListener(onChange);
       workspace.dispose();

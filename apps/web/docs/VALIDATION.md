@@ -1,5 +1,31 @@
 # Validação da modularização — 22/11/2026
 
+## Encaixe automático e fluxo de tipos — 28/11/2026
+
+`pnpm test`: 85 testes aprovados. TypeScript, ESLint e build de produção aprovados. `pnpm exec playwright test automatic-drop.spec.ts categories.spec.ts palette-label.spec.ts drag-feedback.spec.ts structured-editor.spec.ts execution.spec.ts execution-announcements.spec.ts --repeat-each=2`: **54 aprovações**, 27 cenários repetidos sem retries. Inclui soltar dois comandos longe dos encaixes e executar em ordem; repetição selecionada com corpo automático; Escape sem conexão; eventos independentes; botão → categorias → Enter → lista → setas → inserção; lista ao reconfirmar categoria; encaixe explícito, desconexão, foco, anúncios e palco preservados.
+
+Na primeira rodada de nove cenários, seis passaram e três testes antigos de categorias falharam porque exigiam região de anúncios vazia após hover. Essa expectativa era anterior ao anúncio de categoria solicitado; foi atualizada para o nome de Controle. Os helpers também passaram a usar a entrada automática na lista, em vez de acionar novamente o botão que agora leva aos tipos. A rodada final acima verifica as novas expectativas. Não equivale a repetir toda a suíte nem resolver intermitências históricas fora dos cenários exercitados. Fala real com NVDA/Firefox, NVDA/Chrome e VoiceOver/Safari permanece pendente. Sem commit, push ou deploy.
+
+## Área completa da lista e anúncio do palco — 28/11/2026
+
+Superfície SVG da paleta nomeada “Lista de blocos”; fundo vazio anuncia a área e blocos preservam suas descrições. Palco anuncia “Palco” ao entrar sem arrastar, mantendo o resultado semântico do canvas e prioridade da sequência. ESLint e build com TypeScript aprovados.
+
+`pnpm exec playwright test palette-label.spec.ts pointer-hover.spec.ts execution-announcements.spec.ts --repeat-each=2`: **17 aprovações e uma falha**. Os dois cenários da lista/palco passaram nas duas repetições, incluindo espaços vazios, movimento dentro da área, personagem, reentrada, troca de categoria e teclado. Também passaram os testes de prioridade de execução nas duas repetições. Reapareceu no segundo ciclo a falha histórica de hover no editor (`pointer-hover.spec.ts`): esperava descrição completa do bloco conectado, recebeu “Conexão confirmada. Bloco de movimento: mover 10 passos.” O resultado não é considerado inteiramente aprovado nem a intermitência resolvida. Trace em `test-results`. NVDA/Firefox, NVDA/Chrome e VoiceOver/Safari não executados. Sem commit, push ou deploy.
+
+## Nome acessível da paleta — 27/11/2026
+
+Paleta nomeada “Lista de blocos” pela mensagem nativa `WORKSPACE_LABEL_FLYOUT_WORKSPACE`. Removido o rótulo “Editor de blocos” do contêiner externo que englobava paleta e workspace; a região própria do workspace preserva esse nome. ESLint, build com TypeScript e o teste `palette-label.spec.ts` passaram: nome após trocar categorias, ausência de ancestral rotulado como editor e foco na primeira opção ao abrir pelo teclado. Fala real com NVDA ainda não verificada. Sem push.
+
+## Hover, áreas de arraste e encaixes Scratch — 27/11/2026
+
+Implementação: [SCRATCH](SCRATCH.md#ponteiro-e-arraste--27112026). `pnpm test`: 85 aprovados; `pnpm typecheck`, ESLint e build de produção aprovados. Build mantém o aviso conhecido de chunk Scratch acima de 500 kB.
+
+Rodada final: `pnpm exec playwright test drag-feedback.spec.ts pointer-hover.spec.ts execution-announcements.spec.ts structured-editor.spec.ts --repeat-each=2`: **32 aprovações**, 16 cenários repetidos, sem retries, Edge/Chromium. Cobertura nova: região inteira de categoria e seus filhos; reentrada; retomada de hover após execução; paleta antes de clicar; arraste sobre edição e palco; anúncio de conexão sequencial antes de soltar; diferença entre corpo e continuação de repetição com confirmação estrutural após soltar. Regressões: hover parado, sequência prioritária, teclado de inserção, desconexão, exclusão e preservação de relações durante arraste.
+
+As primeiras rodadas falharam no novo teste de loop porque as coordenadas estimadas e depois as coordenadas do banco de conexões não representavam a posição visual do bloco durante o arraste. O teste passou a ler o offset público da conexão e a matriz SVG atual; o encaixe continua feito por mouse real, sem conexão programática. Houve também erro de tipo no teste (`Connection` versus `RenderedConnection`), corrigido com verificação de instância. As rodadas finais acima ocorreram depois dessas correções.
+
+Não foi repetida toda a suíte de navegador; a falha histórica de foco em parâmetros permanece fora desta correção, sem alegação de resolução. Testes reais NVDA/Firefox, NVDA/Chrome e VoiceOver/Safari continuam pendentes. Conferir fala de áreas/encaixes, campos internos do loop e eventual anúncio nativo de papel do botão; DOM não prova fala. Não houve commit, push ou deploy.
+
 ## Faixa compartilhada de navegação — 24/11/2026
 
 Marca transferida para `src/app/SiteHeader.tsx`, comum a Scratch e Python, com links nativos e página atual indicada por `aria-current`. Navegação de documento preserva COOP/COEP do Python e o descarte de memória já existente. Controles e execução permanecem nos módulos; sem autenticação ou tela inicial antecipadas.
@@ -80,3 +106,23 @@ Os dez cenários obrigatórios estão cobertos: print, input seguido de print, d
 Scratch, `packages/block-engine` e backend permanecem sem alterações de código. Não houve persistência, novos endpoints, infraestrutura AWS, commit, push ou deploy. Testes PostgreSQL não foram repetidos nesta fase porque o backend não foi alterado.
 
 **Validação manual pendente:** NVDA/Firefox, NVDA/Chrome e VoiceOver/Safari. Confirmar pergunta pelo label/foco, dois inputs, consulta de código e saída, resultados falados, cancelamento/reinício e ausência de anúncios concorrentes dos botões. Testes automatizados de DOM/foco não comprovam a fala. Medir também inicialização e consumo de memória em equipamentos escolares. Esta entrega não declara conformidade assistiva homologada.
+
+## Novos blocos Scratch — 28/11/2026
+
+- `pnpm test`: 93 testes aprovados em 19 arquivos. Inclui limites de coordenadas/direção, ambos os ramos, continuação, conexões inválidas, espera/cancelamento da fala, concorrência entre falas, round-trip dos novos tipos e descrições atualizadas.
+- `pnpm lint`, `pnpm typecheck` e `pnpm build`: aprovados. Permanece o aviso de chunk Scratch maior que 500 kB.
+- `pnpm exec playwright test catalog-extension.spec.ts categories.spec.ts structured-editor.spec.ts automatic-drop.spec.ts execution-announcements.spec.ts --repeat-each=2`: 38 aprovações, 19 cenários em duas rodadas sem retries. Inclui inserção por teclado, execução dos movimentos, fala temporizada, novo condicional, categorias em três larguras, encaixe automático, desconexão e prioridade dos anúncios.
+- Primeira rodada: 26 passaram e duas execuções do teste novo falharam ao tentar editar antes de o programa terminar. O teste aguardava apenas o desaparecimento do balão; agora aguarda também Iniciar disponível. As duas rodadas finais acima passaram com essa condição observável. As contagens da paleta foram atualizadas para o catálogo ampliado.
+- O servidor Vite iniciado pelo Playwright precisou ser encerrado após todas as asserções, devido ao encerramento pendente no Windows; o resumo final da rodada corrigida teve saída 0.
+
+Não foi repetida a suíte completa; intermitências históricas de hover/foco fora destes cenários não são declaradas resolvidas. Sem mudanças no Python/backend, sem áudio próprio, commit, push ou deploy. Pendente: NVDA/Firefox, NVDA/Chrome e VoiceOver/Safari, especialmente navegação pelos dois corpos, edição de duração/direção e leitura da sequência. DOM e testes automatizados não comprovam fala real.
+
+## Evento do personagem e identificação separada — 28/11/2026
+
+`pnpm test`: 95 testes aprovados em 20 arquivos. `pnpm typecheck`, `pnpm lint` e `pnpm build`: aprovados; permanece o aviso de tamanho do chunk Scratch. Testes do motor distinguem início/clique, respeitam eventos desativados, impedem conexão anterior a evento e preservam a posição no clique. Round-trip inclui o novo tipo.
+
+Navegador: actor-click, palette-label, categories, execution e execution-announcements executados com duas repetições. Os quatro cenários novos (clique/Enter/Espaço, fundo sem execução e Parar) passaram em ambas; também passaram identificação por hover, categorias, prioridade da sequência e estado dos botões. A primeira rodada teve 32 aprovações e quatro falhas de expectativa antiga: descrição do resultado mudou do canvas para uma imagem semântica separada, preservando o personagem como botão. O teste passou a consultar essa imagem, mantendo a exigência da descrição de movimento.
+
+A rodada seguinte teve 35 aprovações e uma falha no teste antigo de Parar: `pauseAt(new Date())` tentou voltar ao passado. A primeira tentativa de ajuste pausava antes do carregamento e bloqueou o lazy loading (34 aprovações, dois timeouts). O ajuste final instala o relógio após navegação e pausa somente após construir o programa, usando o horário do navegador mais um segundo. Rechecagem final `pnpm exec playwright test execution.spec.ts --repeat-each=3`: **9 aprovações**, três cenários por três rodadas sem retries. Nenhuma alteração de produção foi necessária para essas falhas de teste. A suíte completa não foi repetida nem as intermitências históricas fora deste escopo declaradas resolvidas.
+
+Vite foi encerrado por PID após concluir as asserções devido ao teardown pendente no Windows; a rechecagem final terminou com código 0. Manual pendente: NVDA/Firefox, NVDA/Chrome e VoiceOver/Safari para identificação separada, Tab/Enter/Espaço, foco, ocultação do personagem, estados verdadeiros e leitura da sequência. Sem commit, push ou deploy.

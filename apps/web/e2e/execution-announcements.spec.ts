@@ -90,7 +90,7 @@ for (const withMovement of [false, true]) {
         'data-x',
         withMovement ? '10' : '0',
       );
-      const stage = page.locator('.stage__canvas');
+      const stage = page.getByRole('img', { name: /^Personagem Jyboia\./ });
       await expect(stage).not.toHaveAttribute(
         'aria-label',
         /posição x|posição y|coordenadas/i,

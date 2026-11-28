@@ -1,10 +1,20 @@
 /** Modelo do editor local. Não é o ProjectDocument v1 persistido pela API. */
 export type PrototypeBlock = { id: string; next: string | null } & (
   | { kind: 'start' }
+  | { kind: 'actorClick' }
   | { kind: 'move'; steps: number }
   | { kind: 'turn'; degrees: number }
   | { kind: 'goto'; x: number; y: number }
   | { kind: 'say'; text: string }
+  | { kind: 'changeX' | 'changeY'; amount: number }
+  | { kind: 'direction'; degrees: number }
+  | { kind: 'sayFor'; text: string; seconds: number }
+  | {
+      kind: 'ifElse';
+      condition: string | null;
+      body: string | null;
+      elseBody: string | null;
+    }
   | { kind: 'show' | 'hide' }
   | { kind: 'wait'; seconds: number }
   | { kind: 'repeat'; times: number; body: string | null }
@@ -17,8 +27,14 @@ export interface PrototypeProgram {
   readonly blocks: readonly PrototypeBlock[];
   readonly entryBlockIds?: readonly string[];
 }
-export type ConnectionSlot = 'next' | 'body' | 'condition';
+export type ConnectionSlot = 'next' | 'body' | 'elseBody' | 'condition';
 export const blockKinds = [
+  'actorClick',
+  'changeX',
+  'changeY',
+  'direction',
+  'sayFor',
+  'ifElse',
   'start',
   'move',
   'turn',
@@ -38,6 +54,24 @@ export const blockKinds = [
 ] as const;
 export const isOperator = (block: PrototypeBlock) =>
   ['gt', 'lt', 'eq'].includes(block.kind);
+export const isEvent = (block: PrototypeBlock) =>
+  block.kind === 'start' || block.kind === 'actorClick';
+export function selectEvent(
+  program: PrototypeProgram,
+  kind: 'start' | 'actorClick',
+): PrototypeProgram {
+  inspectProgram(program);
+  return {
+    ...program,
+    entryBlockIds: program.blocks
+      .filter(
+        (block) =>
+          block.kind === kind &&
+          (!program.entryBlockIds || program.entryBlockIds.includes(block.id)),
+      )
+      .map((block) => block.id),
+  };
+}
 export function connections(
   block: PrototypeBlock,
 ): { slot: ConnectionSlot; id: string }[] {
@@ -45,7 +79,9 @@ export function connections(
   if (block.next) result.push({ slot: 'next', id: block.next });
   if ('body' in block && block.body)
     result.push({ slot: 'body', id: block.body });
-  if (block.kind === 'if' && block.condition)
+  if (block.kind === 'ifElse' && block.elseBody)
+    result.push({ slot: 'elseBody', id: block.elseBody });
+  if ('condition' in block && block.condition)
     result.push({ slot: 'condition', id: block.condition });
   return result;
 }
@@ -54,10 +90,14 @@ export function acceptsConnection(
   child: PrototypeBlock,
   slot: ConnectionSlot,
 ) {
-  if (parent.id === child.id || child.kind === 'start') return false;
-  if (slot === 'condition') return parent.kind === 'if' && isOperator(child);
+  if (parent.id === child.id || isEvent(child)) return false;
+  if (slot === 'condition') return 'condition' in parent && isOperator(child);
   if (isOperator(parent) || isOperator(child)) return false;
-  return slot === 'next' || (slot === 'body' && 'body' in parent);
+  return (
+    slot === 'next' ||
+    (slot === 'body' && 'body' in parent) ||
+    (slot === 'elseBody' && parent.kind === 'ifElse')
+  );
 }
 export class ProgramError extends Error {
   constructor(
@@ -121,6 +161,13 @@ export function inspectProgram(program: PrototypeProgram) {
       value <= max &&
       (!integer || Number.isInteger(value));
     if (!blockKinds.includes(block.kind)) fail('UNKNOWN_BLOCK_TYPE');
+    if (
+      (block.kind === 'changeX' || block.kind === 'changeY') &&
+      !number(block.amount, -480, 480)
+    )
+      fail('INVALID_STEPS');
+    if (block.kind === 'direction' && !number(block.degrees, -360, 360))
+      fail('INVALID_DEGREES');
     if (block.kind === 'move' && !number(block.steps, -480, 480))
       fail('INVALID_STEPS');
     if (block.kind === 'turn' && !number(block.degrees, -360, 0))
@@ -131,13 +178,16 @@ export function inspectProgram(program: PrototypeProgram) {
     )
       fail('INVALID_POSITION');
     if (
-      block.kind === 'say' &&
+      (block.kind === 'say' || block.kind === 'sayFor') &&
       (typeof block.text !== 'string' ||
         block.text.length > 120 ||
         block.text.includes('\0'))
     )
       fail('INVALID_TEXT');
-    if (block.kind === 'wait' && !number(block.seconds, 0, 30, false))
+    if (
+      (block.kind === 'wait' || block.kind === 'sayFor') &&
+      !number(block.seconds, 0, 30, false)
+    )
       fail('INVALID_WAIT');
     if (block.kind === 'repeat' && !number(block.times, 0, 1000))
       fail('INVALID_REPEAT');
@@ -176,8 +226,8 @@ export function inspectProgram(program: PrototypeProgram) {
     const nextPath = new Set(path).add(block.id);
     const edges = connections(block).sort(
       (a, b) =>
-        ({ condition: 0, body: 1, next: 2 })[a.slot] -
-        { condition: 0, body: 1, next: 2 }[b.slot],
+        ({ condition: 0, body: 1, elseBody: 2, next: 3 })[a.slot] -
+        { condition: 0, body: 1, elseBody: 2, next: 3 }[b.slot],
     );
     for (const edge of edges)
       walk(
@@ -199,12 +249,14 @@ export function inspectProgram(program: PrototypeProgram) {
   if (
     program.entryBlockIds &&
     (new Set(program.entryBlockIds).size !== program.entryBlockIds.length ||
-      program.entryBlockIds.some((id) => byId.get(id)?.kind !== 'start'))
+      program.entryBlockIds.some(
+        (id) => !byId.has(id) || !isEvent(byId.get(id)!),
+      ))
   )
     throw new ProgramError('INVALID_ENTRY');
   const starts = roots.filter(
     (block) =>
-      block.kind === 'start' &&
+      isEvent(block) &&
       (!program.entryBlockIds || program.entryBlockIds.includes(block.id)),
   );
   const sequence = chains

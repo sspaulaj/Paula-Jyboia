@@ -57,6 +57,12 @@ export const editorDocumentSchema = object({
       items: {
         oneOf: [
           block('start'),
+          block('actorClick'),
+          block('changeX', { amount: numeric(-480, 480) }),
+          block('changeY', { amount: numeric(-480, 480) }),
+          block('direction', { degrees: numeric(-360, 360) }),
+          block('sayFor', { text: text(120), seconds: numeric(0, 30, false) }),
+          block('ifElse', { condition: ref, body: ref, elseBody: ref }),
           block('move', { steps: numeric(-480, 480) }),
           block('turn', { degrees: numeric(-360, 0) }),
           block('goto', { x: numeric(-240, 240), y: numeric(-180, 180) }),

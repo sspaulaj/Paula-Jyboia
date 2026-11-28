@@ -11,9 +11,27 @@ for (const width of [1440, 900, 600]) {
     const categories = page.locator('.category-panel');
     const host = page.getByTestId('editor-host');
     for (const [label, names] of [
-      ['Movimento', ['mover 10 passos', 'girar 15 graus', 'ir para x 0, y 0']],
-      ['Aparência', ['dizer Olá', 'mostrar personagem', 'esconder personagem']],
-      ['Eventos', ['quando iniciar']],
+      [
+        'Movimento',
+        [
+          'mover 10 passos',
+          'girar 15 graus',
+          'ir para x 0, y 0',
+          'alterar x por 10',
+          'alterar y por 10',
+          'apontar na direção 0 graus',
+        ],
+      ],
+      [
+        'Aparência',
+        [
+          'dizer Olá',
+          'mostrar personagem',
+          'esconder personagem',
+          'dizer Olá por 2 segundos',
+        ],
+      ],
+      ['Eventos', ['quando iniciar', 'quando o personagem for clicado']],
     ] as const) {
       const button = categories.getByRole('button', {
         name: `Escolher blocos de ${label.toLocaleLowerCase('pt-BR')}`,
@@ -58,11 +76,11 @@ for (const width of [1440, 900, 600]) {
       .getByRole('button', { name: 'Escolher blocos de controle', exact: true })
       .click();
     await expect(page.getByRole('option', { name: /^Bloco de/ })).toHaveCount(
-      4,
+      5,
     );
-    await expect(
-      page.getByTestId('editor-announcements'),
-    ).toBeEmpty();
+    await expect(page.getByTestId('editor-announcements')).toHaveText(
+      'Escolher blocos de controle.',
+    );
     expect(errors).toEqual([]);
   });
 }
@@ -76,10 +94,6 @@ test('trocar categoria preserva os blocos inseridos e permite escolher com tecla
     .getByRole('button', { name: 'Escolher blocos de eventos', exact: true });
   await events.focus();
   await events.press('Enter');
-  await expect(events).toBeFocused();
-  await page
-    .getByRole('button', { name: 'Escolher tipos de blocos' })
-    .press('Enter');
   await expect(page.locator(':focus')).toHaveAttribute(
     'aria-label',
     /quando iniciar/,
@@ -94,7 +108,7 @@ test('trocar categoria preserva os blocos inseridos e permite escolher com tecla
     .getByRole('button', { name: 'Escolher blocos de movimento', exact: true })
     .click();
   await expect(page.getByTestId('editor-host').getByRole('option')).toHaveCount(
-    3,
+    6,
   );
   await expect(
     page.getByRole('figure', { name: /^Bloco de evento/ }),

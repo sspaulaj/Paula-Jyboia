@@ -58,11 +58,7 @@ export function BlockEditor({
   }, [category]);
 
   return (
-    <section
-      id="block-editor"
-      className="block-editor"
-      aria-label="Editor de blocos"
-    >
+    <section id="block-editor" className="block-editor">
       <div className="editor-host" ref={host} data-testid="editor-host" />
     </section>
   );

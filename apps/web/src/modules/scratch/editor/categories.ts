@@ -6,10 +6,10 @@ export const BLOCKS_BY_CATEGORY: Record<
   BlockCategory,
   readonly PrototypeBlock['kind'][]
 > = {
-  motion: ['move', 'turn', 'goto'],
-  appearance: ['say', 'show', 'hide'],
-  events: ['start'],
-  control: ['wait', 'repeat', 'forever', 'if'],
+  motion: ['move', 'turn', 'goto', 'changeX', 'changeY', 'direction'],
+  appearance: ['say', 'show', 'hide', 'sayFor'],
+  events: ['start', 'actorClick'],
+  control: ['wait', 'repeat', 'forever', 'if', 'ifElse'],
   operators: ['gt', 'lt', 'eq'],
   variables: ['set', 'change'],
 };

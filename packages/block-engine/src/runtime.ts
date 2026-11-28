@@ -1,5 +1,6 @@
 import {
   inspectProgram,
+  selectEvent,
   ProgramError,
   type PrototypeBlock,
   type PrototypeProgram,
@@ -38,17 +39,24 @@ export function createExecution(
   program: PrototypeProgram,
   runId: string,
   now: () => number,
-  initial: Pick<ActorState, 'x' | 'y' | 'heading'> = { x: 0, y: 0, heading: 0 },
+  initial: Pick<ActorState, 'x' | 'y' | 'heading'> & Partial<ActorState> = {
+    x: 0,
+    y: 0,
+    heading: 0,
+  },
+  trigger: 'start' | 'actorClick' = 'start',
 ) {
-  const inspected = inspectProgram(program);
+  const inspected = inspectProgram(selectEvent(program, trigger));
   if (!inspected.starts.length) throw new ProgramError('INVALID_ENTRY');
   for (const block of inspected.sequence) {
-    if (block.kind === 'if' && !block.condition)
+    if ('condition' in block && !block.condition)
       throw new ProgramError('MISSING_CONDITION', block.id);
   }
   const byId = new Map(program.blocks.map((block) => [block.id, { ...block }]));
   let state = { ...initialActorState(), ...initial };
-  const variables = new Map<string, number>();
+  const variables = new Map<string, number>(
+    Object.entries(initial.variables ?? {}),
+  );
   const operand = (text: string, blockId: string) => {
     if (Number.isFinite(Number(text))) return Number(text);
     if (!variables.has(text))
@@ -81,8 +89,14 @@ export function createExecution(
           yield* commands(block.body);
           yield block;
         }
-      } else if (block.kind === 'if' && condition(block.condition!)) {
-        yield* commands(block.body);
+      } else if ('condition' in block) {
+        yield* commands(
+          condition(block.condition!)
+            ? block.body
+            : block.kind === 'ifElse'
+              ? block.elseBody
+              : null,
+        );
       }
       id = block.next;
     }
@@ -91,6 +105,7 @@ export function createExecution(
     iterator: commands(start.next),
     readyAt: 0,
     done: false,
+    speech: null as { version: number; blockId: string } | null,
   }));
   let cursor = 0,
     steps = 0,
@@ -98,6 +113,7 @@ export function createExecution(
   let started = false,
     finished = false;
   const startedAt = now();
+  let speechVersion = 0;
   const emit = (event: EventData): ExecutionEvent => ({
     ...event,
     runId,
@@ -119,6 +135,21 @@ export function createExecution(
         for (let checked = 0; checked < fibers.length; checked++) {
           const fiber = fibers[cursor++ % fibers.length]!;
           if (fiber.done || fiber.readyAt > now()) continue;
+          if (fiber.speech) {
+            const speech = fiber.speech;
+            fiber.speech = null;
+            if (speech.version === speechVersion) {
+              state = { ...state, message: '' };
+              return [
+                emit({
+                  type: 'actorStateChanged',
+                  blockId: speech.blockId,
+                  actorId: 'actor1',
+                  state: { ...state, variables: { ...state.variables } },
+                }),
+              ];
+            }
+          }
           const command = fiber.iterator.next();
           if (command.done) {
             fiber.done = true;
@@ -127,6 +158,24 @@ export function createExecution(
           const block = command.value;
           steps++;
           switch (block.kind) {
+            case 'changeX':
+              state = {
+                ...state,
+                x: round(Math.max(-240, Math.min(240, state.x + block.amount))),
+              };
+              break;
+            case 'changeY':
+              state = {
+                ...state,
+                y: round(Math.max(-180, Math.min(180, state.y + block.amount))),
+              };
+              break;
+            case 'direction':
+              state = {
+                ...state,
+                heading: ((block.degrees % 360) + 360) % 360,
+              };
+              break;
             case 'move': {
               state = {
                 ...state,
@@ -144,7 +193,13 @@ export function createExecution(
               state = { ...state, x: block.x, y: block.y };
               break;
             case 'say':
+            case 'sayFor':
+              speechVersion++;
               state = { ...state, message: block.text };
+              if (block.kind === 'sayFor') {
+                fiber.readyAt = now() + block.seconds * 1000;
+                fiber.speech = { version: speechVersion, blockId: block.id };
+              }
               break;
             case 'show':
             case 'hide':

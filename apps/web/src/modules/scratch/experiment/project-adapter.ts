@@ -2,6 +2,7 @@ import * as Blockly from 'blockly/core';
 import {
   connections,
   inspectProgram,
+  isEvent,
   type PrototypeBlock,
 } from '@jyboia/block-engine/experimental';
 import {
@@ -19,6 +20,17 @@ export function writeBlocks(
     const block = workspace.newBlock(`jyboia_${item.kind}`, item.id);
     const fields: Record<string, string | number> = {};
     switch (item.kind) {
+      case 'changeX':
+      case 'changeY':
+        fields.AMOUNT = item.amount;
+        break;
+      case 'direction':
+        fields.DIRECTION = item.degrees;
+        break;
+      case 'sayFor':
+        fields.TEXT = item.text;
+        fields.SECONDS = item.seconds;
+        break;
       case 'move':
         fields.STEPS = item.steps;
         break;
@@ -61,8 +73,13 @@ export function writeBlocks(
       const destination =
         edge.slot === 'next'
           ? parent.nextConnection
-          : parent.getInput(edge.slot === 'body' ? 'BODY' : 'CONDITION')!
-              .connection;
+          : parent.getInput(
+              edge.slot === 'body'
+                ? 'BODY'
+                : edge.slot === 'elseBody'
+                  ? 'ELSE'
+                  : 'CONDITION',
+            )!.connection;
       destination!.connect(
         edge.slot === 'condition'
           ? child.outputConnection!
@@ -80,7 +97,7 @@ export function writeBlocks(
       document.program.blocks
         .filter(
           (block) =>
-            block.kind === 'start' &&
+            isEvent(block) &&
             !document.program.entryBlockIds.includes(block.id),
         )
         .map((block) => block.id),

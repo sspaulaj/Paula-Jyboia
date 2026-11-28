@@ -8,7 +8,7 @@ import { announceSequence } from './execution-description';
 import type { mountEditor } from '../experiment/blockly-adapter';
 import { describeSequence } from '../experiment/descriptions';
 import type { ExecutionState } from './types';
-import { ProgramError } from '@jyboia/block-engine/experimental';
+import { ProgramError, selectEvent } from '@jyboia/block-engine/experimental';
 import type { createAnnouncements } from '../../../shared/accessibility/announcements';
 
 function errorMessage(code: string) {
@@ -59,18 +59,23 @@ export function useProgramExecution(
     announce('Programa parado.');
   };
 
-  const start = () => {
+  const start = (trigger: 'start' | 'actorClick' = 'start') => {
     const editor = editorRef.current;
     if (!editor || execution.current) return;
     setError(null);
     try {
-      const program = editor.read();
-      const initial = { x: actor.x, y: actor.y, heading: actor.heading };
+      const program = selectEvent(editor.read(), trigger);
+      if (trigger === 'actorClick' && !program.entryBlockIds?.length) return;
+      const initial =
+        trigger === 'actorClick'
+          ? actor
+          : { x: actor.x, y: actor.y, heading: actor.heading };
       const run = createExecution(
         program,
         crypto.randomUUID(),
         () => performance.now(),
         initial,
+        trigger,
       );
       // Fast Refresh can retain instances created before these methods existed.
       // Keep the in-memory program executable without forcing a page reload.
@@ -93,9 +98,7 @@ export function useProgramExecution(
         if (execution.current !== run) return;
         for (const event of run.advance()) {
           if (event.type === 'runStarted') {
-            editor.workspace.highlightBlock(
-              program.blocks.find((block) => block.kind === 'start')!.id,
-            );
+            editor.workspace.highlightBlock(program.entryBlockIds![0]!);
           } else if (event.type === 'commandStarted') {
             editor.workspace.highlightBlock(event.blockId);
           } else if (event.type === 'actorStateChanged') {
@@ -107,7 +110,10 @@ export function useProgramExecution(
               setMovementDescription(
                 `O personagem ${distance < 0 ? 'recuou' : 'avançou'} ${Math.abs(distance)} passos.`,
               );
-            } else if (block?.kind === 'goto') {
+            } else if (
+              block &&
+              ['goto', 'changeX', 'changeY'].includes(block.kind)
+            ) {
               setMovementDescription('O personagem mudou de posição.');
             }
             previousActor = event.state;

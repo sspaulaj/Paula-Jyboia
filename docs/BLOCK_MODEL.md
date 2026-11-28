@@ -107,3 +107,13 @@ O grafo experimental Blockly ainda requer um adaptador frontend para este docume
 O módulo `block-engine/runtime` interpreta agora o grafo experimental já produzido pelo editor, com eventos ordenados conforme o contrato acima, incluindo `say`. Não recebe JSON Blockly nem documentos persistidos diretamente. Cada início captura um plano validado, exige exatamente um `start`, ignora comandos soltos e reinicia o personagem em (0, 0), direção 0 e fala vazia. Conexões definem a ordem; até 200 blocos sem ciclos limitam os passos. Há também verificação de 1.000 passos e 30 segundos com relógio injetado.
 
 O frontend agenda avanços a cada 300 ms e interpreta os eventos para atualizar o palco lógico 480 × 360 e destacar o bloco corrente. Parar preserva o último estado produzido e cancela avanços pendentes. O intervalo é uma apresentação visual, não sincronização com fala de leitores de tela. A rota experimental antiga continua destinada à avaliação de navegação/anúncios; o palco está na página principal `/`.
+
+## Catálogo local ampliado — 28/11/2026
+
+O modelo local/v2 aceita `changeX` e `changeY` com `amount` inteiro (-480…480), `direction` com `degrees` inteiro (-360…360), `sayFor` com `text` (até 120 caracteres) e `seconds` (0…30), e `ifElse` com `condition`, `body` e `elseBody` anuláveis. `next` mantém a continuação. Os dois corpos aceitam comandos; somente a condição aceita operadores booleanos. A validação aplica as mesmas regras de ciclos, profundidade e múltiplos pais a `elseBody`.
+
+A extensão é aditiva no documento local v2; o documento v1 não muda. Leitores anteriores rejeitam tipos desconhecidos. Não há persistência no MVP. O round-trip do adaptador cobre IDs, valores e os dois ramos. O motor permanece sem dependência de DOM, Blockly ou áudio. Consulte as unidades, limites e regras de fala temporizada em [SCRATCH](../apps/web/docs/SCRATCH.md).
+
+### Evento do personagem — 28/11/2026
+
+`actorClick` é um evento sem parâmetros, com `id` e `next`, sem entrada anterior. O documento local v2 e o adaptador preservam o tipo e seus IDs. `isEvent` identifica start/actorClick; `selectEvent` filtra pontos de entrada habilitados por tipo. O runtime recebe o gatilho explícito, com start como padrão, e nunca executa automaticamente o outro tipo. Não depende de DOM: clique/teclado são convertidos em gatilho pelo frontend. Clique preserva o estado atual completo do personagem; o início comum preserva seu comportamento anterior. Mantidos limites, cancelamento, anúncios derivados das conexões e execução local.

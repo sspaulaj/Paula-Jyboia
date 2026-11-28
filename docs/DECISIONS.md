@@ -175,3 +175,15 @@ Novas decisões recebem ID, data, status, contexto/alternativas, justificativa e
 **Alternativas:** aceitar JSON Blockly opaco impediria validar conexões e acoplaria persistência ao editor; sobrescrita incondicional perderia edições concorrentes; paginação sem limite permitiria resposta não limitada. **Consequências:** DTOs e schemas públicos em shared/projects, OpenAPI gerado dos mesmos schemas, validação pura em block-engine/validation com Ajv 8.20.0 já presente na stack. Exportações separadas mantêm Ajv fora do caminho de importação do health/frontend. JSONB preserva a estrutura; serialização visual não é contrato.
 
 A migração inicial cria tabela; o schema de bootstrap não havia sido migrado. Se houver aplicação manual antiga, exige plano de migração específico sem reset. Listagem sem proprietário é global à instalação. Sem autenticação, serviço aceita apenas host loopback e não deve ser exposto por proxy/túnel. Política de acesso continua pré-requisito para uso público. Testes de integração criam um schema aleatório próprio e removem somente esse namespace.
+
+## D-2026-11-28-CATALOG — Extensão local do catálogo Scratch
+
+**Contexto:** solicitação de novos comandos e de áudio exclusivamente pelo leitor de tela. **Decisão:** ampliar o modelo local/v2 de forma aditiva com alteração de eixos, direção absoluta, fala temporizada e condicional com dois ramos. Manter v1 e Python intactos. A espera usa o relógio injetado do interpretador; um identificador de fala impede que uma espera antiga apague uma fala posterior de outra sequência.
+
+**Alternativas:** representar senão como um segundo Se duplicaria a avaliação; temporizadores no componente visual acoplariam a semântica ao frontend. Áudio Web Audio ou voz da aplicação não atendem ao requisito confirmado de áudio exclusivo do leitor e não foram implementados.
+
+**Consequências:** clientes antigos do documento v2 rejeitam os novos tipos; não há persistência ativa no MVP. Ambos os ramos são descritos estruturalmente, mas só um executa. Limites globais do motor permanecem. **Evidências:** testes de motor, round-trip do adaptador, descrições e navegação em navegador, registrados em apps/web/docs/VALIDATION.md. Leitores de tela reais ainda exigem validação manual.
+
+## D-2026-11-28-ACTOR-EVENT — Personagem acionável e gatilho explícito
+
+**Contexto:** identificar palco/personagem separadamente e executar comandos ao clicar no personagem. **Decisão:** personagem como botão HTML no palco, acionável também por Enter/Espaço; descrição do resultado separada do botão, sem role=img no seu ancestral. O motor recebe um gatilho tipado start/actorClick e filtra pontos de entrada. **Alternativas:** listeners apenas na imagem não garantiriam teclado; executar todos os eventos ao iniciar confundiria os gatilhos. **Consequências:** mantém uma execução por vez e Parar; cliques durante execução não são enfileirados. O gatilho de clique preserva o estado atual do personagem. Sem novas dependências, persistência ou áudio. **Evidência:** testes de motor, serialização, clique/teclado, identificação e regressões registrados em apps/web/docs/VALIDATION.md; leitores reais pendentes.

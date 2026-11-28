@@ -12,6 +12,15 @@ export function announceSequence(program: PrototypeProgram): string {
     while (id) {
       const block = byId.get(id)!;
       labels.push(describeBlockBrief(block, program));
+      if (block.kind === 'ifElse') {
+        labels.push('então');
+        walk(block.body);
+        labels.push('senão');
+        walk(block.elseBody);
+        labels.push('fim da condição');
+        id = block.next;
+        continue;
+      }
       if ('body' in block && block.body) {
         walk(block.body);
         labels.push(
@@ -35,8 +44,17 @@ function describeBlockBrief(
   program: PrototypeProgram,
 ): string {
   switch (block.kind) {
+    case 'changeX':
+    case 'changeY':
+      return `alterar ${block.kind === 'changeX' ? 'x' : 'y'} por ${block.amount}`;
+    case 'direction':
+      return `apontar na direção ${block.degrees} graus`;
+    case 'sayFor':
+      return `diga ${block.text || 'texto vazio'} por ${block.seconds} segundos`;
     case 'start':
       return 'quando iniciar programa';
+    case 'actorClick':
+      return 'quando o personagem for clicado';
     case 'move':
       return `mover ${block.steps} passos`;
     case 'turn':
@@ -55,6 +73,7 @@ function describeBlockBrief(
       return `repetir ${block.times} vezes`;
     case 'forever':
       return 'sempre';
+    case 'ifElse':
     case 'if': {
       const cond = program.blocks.find((b) => b.id === block.condition);
       const expr =

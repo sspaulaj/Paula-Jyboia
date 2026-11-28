@@ -12,9 +12,6 @@ export async function insertFromPalette(
       exact: true,
     })
     .press('Enter');
-  await page
-    .getByRole('button', { name: 'Escolher tipos de blocos' })
-    .press('Enter');
   for (let i = 0; i < index; i++) await page.keyboard.press('ArrowDown');
   await page.keyboard.press('Enter');
   await page.keyboard.press('Enter');

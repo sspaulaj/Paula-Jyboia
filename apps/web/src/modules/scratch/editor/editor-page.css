@@ -366,6 +366,10 @@
 }
 
 .stage__character {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -430,6 +434,11 @@
   height: 64px;
   filter: drop-shadow(0 2px 6px rgba(0 0 0 / 0.5));
   display: block;
+}
+
+.stage__character:focus-visible {
+  outline: 3px solid #174f9c;
+  outline-offset: 4px;
 }
 
 .stage__running-indicator {

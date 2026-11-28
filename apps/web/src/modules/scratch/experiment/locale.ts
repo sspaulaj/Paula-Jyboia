@@ -38,7 +38,7 @@ export const accessibilityMessages: Record<string, string> = {
   WORKSPACE_CONTENTS_BLOCKS_ZERO: 'Nenhum bloco%2 no editor.',
   WORKSPACE_LABEL_1_STACK: 'Uma cadeia de blocos',
   WORKSPACE_LABEL_MANY_STACKS: '%1 cadeias de blocos',
-  WORKSPACE_LABEL_FLYOUT_WORKSPACE: 'Paleta de blocos',
+  WORKSPACE_LABEL_FLYOUT_WORKSPACE: 'Lista de blocos',
   WORKSPACE_LABEL_PLAIN: 'Editor de blocos.',
   WORKSPACE_ROLEDESCRIPTION: 'editor',
   SCREENREADER_MODE_ENABLED:

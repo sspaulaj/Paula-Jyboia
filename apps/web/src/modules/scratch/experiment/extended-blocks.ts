@@ -27,6 +27,40 @@ const command = (
 
 export const extendedDefinitions = [
   command(
+    'changeX',
+    'alterar x por %1',
+    [number('AMOUNT', 10, -480, 480)],
+    '#285cba',
+  ),
+  command(
+    'changeY',
+    'alterar y por %1',
+    [number('AMOUNT', 10, -480, 480)],
+    '#285cba',
+  ),
+  command(
+    'direction',
+    'apontar na direção %1 graus',
+    [number('DIRECTION', 0, -360, 360)],
+    '#285cba',
+  ),
+  command(
+    'sayFor',
+    'dizer %1 por %2 segundos',
+    [text('TEXT', 'Olá'), number('SECONDS', 2, 0, 30, 0.1)],
+    '#7542a6',
+  ),
+  command(
+    'ifElse',
+    'se %1 então %2 senão %3',
+    [
+      { type: 'input_value', name: 'CONDITION', check: 'Boolean' },
+      body,
+      { ...body, name: 'ELSE' },
+    ],
+    '#995000',
+  ),
+  command(
     'goto',
     'ir para x %1 y %2',
     [number('X', 0, -240, 240), number('Y', 0, -180, 180)],

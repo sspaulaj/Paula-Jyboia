@@ -7,6 +7,8 @@ interface StageProps {
   executionState: ExecutionState;
   /** Descrição textual do estado atual do palco, atualizada para leitores de tela */
   stageDescription: string;
+  onAnnounceArea: (text: string) => void;
+  onActivateCharacter: () => void;
 }
 
 /**
@@ -15,15 +17,54 @@ interface StageProps {
  * A descrição textual do estado é mantida sincronizada com o estado visual
  * para que leitores de tela possam comunicar o resultado da execução.
  */
-export function Stage({ actor, executionState, stageDescription }: StageProps) {
+export function Stage({
+  actor,
+  executionState,
+  stageDescription,
+  onAnnounceArea,
+  onActivateCharacter,
+}: StageProps) {
   return (
-    <section className="stage" aria-label="Palco de execução">
-      <div className="stage__canvas" role="img" aria-label={stageDescription}>
+    <section
+      className="stage"
+      aria-label="Palco"
+      onPointerEnter={(event) => {
+        if (
+          !event.buttons &&
+          !(event.target as Element).closest('.stage__character')
+        )
+          onAnnounceArea('Palco.');
+      }}
+    >
+      <div className="stage__canvas">
+        <span
+          className="screen-reader-only"
+          role="img"
+          aria-label={stageDescription}
+        />
         <div className="stage__grid" aria-hidden="true" />
 
-        <div
+        <button
+          type="button"
           className="stage__character"
-          aria-hidden="true"
+          aria-label="Personagem Jyboia"
+          aria-disabled={executionState === 'running'}
+          onClick={() => {
+            if (executionState !== 'running') onActivateCharacter();
+          }}
+          onPointerEnter={(event) => {
+            if (!event.buttons) onAnnounceArea('Personagem Jyboia.');
+          }}
+          onPointerLeave={(event) => {
+            if (
+              !event.buttons &&
+              event.relatedTarget instanceof Node &&
+              event.currentTarget
+                .closest('.stage')
+                ?.contains(event.relatedTarget)
+            )
+              onAnnounceArea('Palco.');
+          }}
           data-state={executionState}
           data-x={actor.x}
           data-y={actor.y}
@@ -41,7 +82,7 @@ export function Stage({ actor, executionState, stageDescription }: StageProps) {
             className="stage__character-img"
             draggable={false}
           />
-        </div>
+        </button>
 
         {actor.message && (
           <p className="stage__speech" aria-hidden="true">

@@ -17,6 +17,7 @@ import type {
   mountEditor,
 } from '../experiment/blockly-adapter';
 import type { BlockCategory } from './types';
+import { BLOCKS_BY_CATEGORY } from './categories';
 import './editor-page.css';
 
 /**
@@ -40,6 +41,7 @@ export function EditorPage() {
     selectedId: null,
   });
   const editorRef = useRef<ReturnType<typeof mountEditor> | null>(null);
+  const categoriesRef = useRef<HTMLElement>(null);
   const sequenceRef = useRef<HTMLDivElement>(null);
   const [sequenceDescription, setSequenceDescription] = useState('');
   const presentSequence = (text: string) => {
@@ -104,7 +106,10 @@ export function EditorPage() {
           if (executionState !== 'running') editorRef.current?.enter();
         }}
         onOpenPalette={() => {
-          if (executionState !== 'running') editorRef.current?.palette();
+          if (executionState !== 'running')
+            categoriesRef.current
+              ?.querySelector<HTMLButtonElement>('button[aria-current="true"]')
+              ?.focus();
         }}
         onDisconnect={handleDisconnect}
       />
@@ -112,13 +117,26 @@ export function EditorPage() {
       <div className="editor-page__body">
         {/* Coluna esquerda: categorias de blocos */}
         <aside
+          ref={categoriesRef}
           inert={executionState === 'running'}
           className="editor-page__left"
           aria-label="Categorias de blocos"
         >
           <CategoryPanel
+            onAnnounce={(message, newEntry) => {
+              // Pointer enter precedes pointer move: resume on this explicit
+              // interaction too, while execution still keeps priority.
+              announcements.resumeEditing();
+              announcements.edit(message, newEntry);
+            }}
             selected={selectedCategory}
-            onSelect={setSelectedCategory}
+            onSelect={(category) => {
+              flushSync(() => setSelectedCategory(category));
+              // Flush the category's list before moving focus, including when
+              // the pupil confirms the category already selected.
+              editorRef.current?.setPalette(BLOCKS_BY_CATEGORY[category]);
+              editorRef.current?.palette();
+            }}
           />
         </aside>
 
@@ -141,10 +159,15 @@ export function EditorPage() {
             state={executionState}
             sequenceRef={sequenceRef}
             sequenceDescription={sequenceDescription}
-            onStart={handleStartExecution}
+            onStart={() => handleStartExecution()}
             onStop={handleStopExecution}
           />
           <Stage
+            onAnnounceArea={(text) => {
+              announcements.resumeEditing();
+              announcements.edit(text, true);
+            }}
+            onActivateCharacter={() => handleStartExecution('actorClick')}
             actor={actor}
             executionState={executionState}
             stageDescription={stageDescription}
